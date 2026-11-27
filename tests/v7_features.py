@@ -1,0 +1,86 @@
+import os
+APP = 'file://' + os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'index.html'))
+SHOTS = os.environ.get('SHOTS', '/tmp/shots'); os.makedirs(SHOTS, exist_ok=True)
+import asyncio, json
+from playwright.async_api import async_playwright
+STUB = """window.Android={scan(id){setTimeout(()=>onScan(id,window.__code||'',''),30)}, print(h,j){window.__printed=j}, openUrl(u){window.__url=u}, shareText(t){window.__share=t}};"""
+async def main():
+  async with async_playwright() as p:
+    b=await p.chromium.launch(executable_path='/usr/bin/google-chrome',args=['--no-sandbox'])
+    ctx=await b.new_context(viewport={'width':390,'height':844},device_scale_factor=2,has_touch=True)
+    await ctx.add_init_script(STUB)
+    pg=await ctx.new_page(); errs=[]
+    pg.on('pageerror',lambda e:errs.append(str(e))); pg.on('console',lambda m: m.type=='error' and errs.append(m.text))
+    await pg.goto(APP)
+    await pg.evaluate("""()=>{const it=newItem('قميص'); it.code='111'; S.items.push(it); const v=newVariant(it,'أحمر','M'); v.code='6221234567890'; const v2=newVariant(it,'أسود','L');
+      S.txns.push({id:uid(),type:'buy',ts:Date.now()-86400000,lines:[{itemId:it.id,vid:v.id,qty:10,cost:100},{itemId:it.id,vid:v2.id,qty:4,cost:100}],pay:'كاش'}); S.settings.margin=50; persist();}""")
+    # --- sell via barcode scan (variant code preselects black? no: red) ---
+    await pg.click('nav button[data-p=sell]')
+    await pg.evaluate("window.__code='6221234567890'")
+    await pg.click('#pg-sell .scanb'); await pg.wait_for_timeout(200)
+    print('scan picked:', await pg.evaluate("sSel&&sSel.name"), await pg.evaluate("sVar&&sVar.color"))
+    await pg.fill('#sQty','2'); await pg.fill('#sDisc','10'); await pg.dispatch_event('#sDisc','input'); await pg.click('#sAdd')
+    # keyboard-wedge scanner: type code + Enter
+    await pg.fill('#sItem','111'); await pg.press('#sItem','Enter'); await pg.wait_for_timeout(100)
+    print('enter picked:', await pg.evaluate("sSel&&sSel.name"))
+    await pg.click('#sChips [data-v]:nth-child(2)'); await pg.fill('#sQty','1'); await pg.click('#sAdd')
+    await pg.fill('#sCust','أم أحمد'); await pg.dispatch_event('#sCust','input'); await pg.fill('#sPhone','01001234567'); await pg.dispatch_event('#sPhone','input')
+    await pg.click('#sPayC [data-pay="آجل"]'); await pg.fill('#sPaid','100'); await pg.dispatch_event('#sPaid','input')
+    await pg.screenshot(path=SHOTS+'/1-cart.png', full_page=True)
+    await pg.click('#sSave'); await pg.wait_for_timeout(500)
+    await pg.screenshot(path=SHOTS+'/2-receipt.png')
+    await pg.click('.mdd [data-wa]'); print('wa url:', (await pg.evaluate("window.__url"))[:60])
+    await pg.click('.mdd [data-pr]'); print('printed:', await pg.evaluate("window.__printed"))
+    await pg.click('.mdd [data-x]'); await pg.wait_for_timeout(250)
+    print('bal:', await pg.evaluate("custBals()"), 'sale total', await pg.evaluate("saleTotal(S.txns.find(t=>t.type==='sell'))"))
+    # --- return 1 red from history ---
+    await pg.click('nav button[data-p=hist]'); await pg.click('#hList .tx'); await pg.wait_for_timeout(150)
+    await pg.click('#hList [data-ret]'); await pg.wait_for_timeout(250)
+    await pg.click('#rBody .rtc >> nth=0 >> [data-d="1"]'); await pg.wait_for_timeout(150)
+    await pg.click('#rBody .rtc >> nth=0 >> [data-why=size]'); await pg.wait_for_timeout(150)
+    await pg.screenshot(path=SHOTS+'/3-return.png')
+    await pg.click('#rSave'); await pg.wait_for_timeout(500); await pg.evaluate("$$('.mdd [data-x]').forEach(b=>b.click())"); await pg.wait_for_timeout(300)
+    print('after return bal:', await pg.evaluate("custBals()"), 'stock red', await pg.evaluate("C.V[S.items[0].variants[0].id].stock"))
+    print('month:', await pg.evaluate("(()=>{const d=new Date(),f=monthFig(d.getFullYear(),d.getMonth());return {sales:f.sales,cogs:f.cogs,ret:f.ret,credit:f.credit,byPay:f.byPay}})()"))
+    await pg.screenshot(path=SHOTS+'/4-hist.png', full_page=True)
+    # --- customers page, collect ---
+    await pg.click('nav button[data-p=cust]'); await pg.wait_for_timeout(300)
+    await pg.screenshot(path=SHOTS+'/5-cust.png')
+    await pg.click('#cList .tx'); await pg.wait_for_timeout(300)
+    await pg.screenshot(path=SHOTS+'/6-statement.png')
+    await pg.click('#cuPay'); await pg.fill('#cpA','50'); await pg.click('.mdd [data-ok]'); await pg.wait_for_timeout(300)
+    print('after collect:', await pg.evaluate("custBals()"))
+    await pg.click('#cuWa'); print('reminder:', (await pg.evaluate("decodeURIComponent(window.__url)"))[:90])
+    await pg.evaluate("closeModal()")
+    # --- users ---
+    await pg.click('#bSet'); await pg.wait_for_timeout(200); await pg.screenshot(path=SHOTS+'/7-settings.png', full_page=True)
+    await pg.click('#tUsers'); await pg.wait_for_timeout(200); await pg.click('#uAdd'); await pg.wait_for_timeout(200)
+    await pg.fill('#uName','مينا'); await pg.fill('#uPin','1234'); await pg.click('.mdd [data-ok]'); await pg.wait_for_timeout(300)
+    await pg.click('#uAdd'); await pg.wait_for_timeout(200); await pg.fill('#uName','سارة'); await pg.fill('#uPin','5555')
+    await pg.screenshot(path=SHOTS+'/8-user.png')
+    await pg.click('.mdd [data-ok]'); await pg.wait_for_timeout(300)
+    await pg.evaluate("closeModal(); logout()"); await pg.wait_for_timeout(200)
+    await pg.screenshot(path=SHOTS+'/9-login.png')
+    await pg.click('#login [data-u]:nth-child(2)')
+    for k in '5555': await pg.click(f'#login [data-k="{k}"]')
+    await pg.wait_for_timeout(300)
+    print('logged in as', await pg.evaluate("who()"), 'tabs', await pg.evaluate("TABS"), 'nocost', await pg.evaluate("document.body.classList.contains('nocost')"))
+    await pg.click('nav button[data-p=hist]'); await pg.wait_for_timeout(200)
+    print('hist has buys:', await pg.evaluate("$$('#hList .pill.p-blu').length"), 'del btns:', await pg.evaluate("$$('#hList [data-del]').length"))
+    await pg.click('nav button[data-p=stock]'); await pg.screenshot(path=SHOTS+'/10-staff-stock.png')
+    # wrong pin
+    await pg.evaluate("logout()"); await pg.click('#login [data-u]:nth-child(1)')
+    for k in '9999': await pg.click(f'#login [data-k="{k}"]')
+    await pg.click('#login [data-k="ok"]'); print('still locked:', await pg.evaluate("$('#login').style.display"))
+    for k in '1234': await pg.click(f'#login [data-k="{k}"]')
+    await pg.wait_for_timeout(200); print('owner:', await pg.evaluate("who()"), await pg.evaluate("TABS.length"))
+    # sync record ids include new kinds
+    print('records:', sorted({k[:2] for k in await pg.evaluate("Object.keys(syRecords())")}))
+    # dark
+    await pg.evaluate("applyTheme(true)"); await pg.click('nav button[data-p=cust]'); await pg.click('#cSeg [data-f=all]'); await pg.wait_for_timeout(300)
+    await pg.screenshot(path=SHOTS+'/11-dark-cust.png')
+    await pg.click('nav button[data-p=hist]'); await pg.evaluate("openReceipt(S.txns.find(t=>t.type==='sell'))"); await pg.wait_for_timeout(300)
+    await pg.screenshot(path=SHOTS+'/12-dark-receipt.png')
+    print('ERRORS:', errs)
+    await b.close()
+asyncio.run(main())

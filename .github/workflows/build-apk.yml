@@ -1,0 +1,64 @@
+name: Build Android app
+
+on:
+  push:
+    branches: [main]
+    paths-ignore: ['android-key/**']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.7'
+
+      # The signing key is made once and saved in the repository, so every new
+      # version installs over the old one and your saved data is kept.
+      - name: Signing key
+        run: |
+          mkdir -p android-key
+          if [ ! -f android-key/takla.jks ]; then
+            keytool -genkeypair -keystore android-key/takla.jks -alias takla \
+              -keyalg RSA -keysize 2048 -validity 10000 \
+              -storepass takla123 -keypass takla123 \
+              -dname "CN=Takla, O=Personal, C=EG"
+            git config user.name "github-actions"
+            git config user.email "github-actions@users.noreply.github.com"
+            git add android-key/takla.jks
+            git commit -m "Add app signing key"
+            git push
+          fi
+
+      - name: Add the app page to the Android project
+        run: |
+          A=android/app/src/main
+          mkdir -p $A/assets $A/res/mipmap-xxxhdpi
+          cp index.html manifest.json icon-192.png icon-512.png $A/assets/
+          cp icon-192.png $A/res/mipmap-xxxhdpi/ic_launcher.png
+
+      - name: Build APK
+        working-directory: android
+        run: gradle assembleRelease --no-daemon --stacktrace
+
+      - name: Name the APK
+        run: cp android/app/build/outputs/apk/release/app-release.apk Takla.apk
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ github.run_number }}
+          name: Takla ${{ github.run_number }}
+          body: Download Takla.apk below and open it on your phone to install or update. Your data is kept when updating.
+          files: Takla.apk
+          make_latest: true
