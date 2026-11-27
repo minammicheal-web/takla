@@ -3904,12 +3904,12 @@ function openAddLine(init, idx, dup) {
   const pubHint = () => { const h = $('#aPubH', el); if (!h) return; const n = num(V('aPub')), us = PKON ? pkUnits(pk) : null, u = us ? un(us[0][0]) : '';
     h.innerHTML = n > 0 && oldPub > 0 && Math.abs(n - oldPub) > 0.004 ? `<b style="color:var(--amb)">⚠ ${tx('سعر الجمهور اتغير', 'Public price changed')}: ${fmt(oldPub)} ← ${fmt(n)}</b>${' · ' + tx('سعر البيع اتعدّل عليه', 'the selling price follows it')}`
       : n > 0 ? tx(`السعر ده لل${u || 'وحدة'} — سعر البيع بيتحسب منه`, `This price is per ${u || 'unit'} — the selling price follows it`) : ''; };
-  const pkDraw = (names) => {
+  const pkDraw = (names, counts = true) => {
     if (!PKON) return;
     const us = pkUnits(pk);
     if (names) { const k = pkSel(); custom = custom || k < 0; $('#aPack', el).value = custom ? 'c' : String(k); if (window.MK && MK.syncSelect) MK.syncSelect($('#aPack', el));
       $('#aPkNm', el).innerHTML = custom ? `<div class="row">${[0, 1, 2].map(i => `<div><label>${[tx('الوحدة الكبيرة', 'Big unit'), tx('الوحدة الوسطى', 'Middle unit'), tx('الوحدة الصغيرة (اختياري)', 'Small unit (optional)')][i]}</label><input data-un="${i}" value="${esc(pk.u[i] || '')}" placeholder="${['علبة', 'شريط', 'قرص'][i]}"></div>`).join('')}</div>` : ''; }
-    $('#aPkCn', el).innerHTML = pk.u.length > 1 ? `<div class="row">${pk.u.slice(0, -1).map((u, i) => `<div><label>${tx(`عدد ال${pk.u[i + 1]} في ال${u}`, `${un(pk.u[i + 1])}s per ${un(u)}`)}</label><input data-pn="${i}" inputmode="numeric" value="${esc(pk.n[i] || '')}"></div>`).join('')}</div>` : '';
+    if (counts) $('#aPkCn', el).innerHTML = pk.u.length > 1 ? `<div class="row">${pk.u.slice(0, -1).map((u, i) => `<div><label>${tx(`عدد ال${pk.u[i + 1]} في ال${u}`, `${un(pk.u[i + 1])}s per ${un(u)}`)}</label><input data-pn="${i}" inputmode="numeric" value="${esc(pk.n[i] || '')}"></div>`).join('')}</div>` : '';
     const chip = (i, cur, k) => `<button type="button" class="vchip ${i === cur ? 'on' : ''}" data-${k}="${i}">${esc(un(us[i][0]))}${us[i][1] > 1 ? `<small>${fmt(us[i][1])} ${esc(un(pk.u[pk.u.length - 1]))}</small>` : ''}</button>`;
     $('#aBU', el).innerHTML = us.map((x, i) => chip(i, bu, 'bu')).join(''); $('#aBU', el).style.display = $('#aBU', el).previousElementSibling.style.display = us.length > 1 ? '' : 'none';
     $('#aPU', el).innerHTML = us.map((x, i) => chip(i, pu, 'pu')).join(''); $('#aPU', el).style.display = $('#aPU', el).previousElementSibling.style.display = us.length > 1 ? '' : 'none';
@@ -3942,7 +3942,7 @@ function openAddLine(init, idx, dup) {
       const nm = e.target.closest('[data-un]'), cn = e.target.closest('[data-pn]');
       if (nm) { const vals = $$('[data-un]', el).map(x => x.value.trim()); const u = vals.filter(Boolean); if (!u.length) return;
         const old = pk.n; pk = { u, n: u.slice(1).map((_, i) => old[i] || 1) }; bu = Math.min(bu, u.length - 1); pu = Math.min(pu, u.length - 1); pkDraw(false); return; }
-      if (cn) { pk.n[+cn.dataset.pn] = Math.max(1, Math.round(num(cn.value))) || 1; pkDraw(false); return; }
+      if (cn) { const k = Math.round(num(cn.value)); pk.n[+cn.dataset.pn] = k > 0 ? k : ''; pkDraw(false, false); return; }
       if (['aQty', 'aCost', 'aPrice'].includes(e.target.id)) pkHint();
       if (e.target.id === 'aPub') { const n = num(V('aPub')); if (n > 0) { const us = pkUnits(pk); $('#aPrice', el).value = pkMoney(n / us[0][1] * us[pu][1]); pkHint(); } }
       if (['aPub', 'aPrice'].includes(e.target.id)) pubHint();
@@ -4008,6 +4008,7 @@ function openAddLine(init, idx, dup) {
     return o; };
   const check = l => {
     if (!l.name) return tx('اكتب اسم الصنف', 'Enter the item name');
+    if (PKON && pk.n.slice(0, pk.u.length - 1).some(x => !(+x > 0))) return tx('اكتب عدد الوحدات في التعبئة', 'Enter the pack counts');
     if (!(l.qty > 0)) return tx('اكتب الكمية', 'Enter the quantity');
     if (!(l.cost > 0)) return tx('اكتب تكلفة القطعة', 'Enter the cost');
     const sn = splitSn(l.sn); if (sn.length && sn.length !== l.qty) return tx(`عدد السيريالات (${sn.length}) لازم يساوي الكمية`, `Serial count (${sn.length}) must equal the quantity`);
