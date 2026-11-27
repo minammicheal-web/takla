@@ -37,7 +37,7 @@ async def main():
     await pg.click('nav button[data-p=hist]'); await pg.click('#hList .tx'); await pg.wait_for_timeout(150)
     await pg.click('#hList [data-ret]'); await pg.wait_for_timeout(250)
     await pg.click('#rBody .rtc >> nth=0 >> [data-d="1"]'); await pg.wait_for_timeout(150)
-    await pg.click('#rBody .rtc >> nth=0 >> [data-why=size]'); await pg.wait_for_timeout(150)
+    await pg.click('#rBody .rtc >> nth=0 >> [data-why=mind]'); await pg.wait_for_timeout(150)
     await pg.screenshot(path=SHOTS+'/3-return.png')
     await pg.click('#rSave'); await pg.wait_for_timeout(500); await pg.evaluate("$$('.mdd [data-x]').forEach(b=>b.click())"); await pg.wait_for_timeout(300)
     print('after return bal:', await pg.evaluate("custBals()"), 'stock red', await pg.evaluate("C.V[S.items[0].variants[0].id].stock"))

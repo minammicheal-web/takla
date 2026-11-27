@@ -192,6 +192,7 @@ html.dark{--sc:#1f2b27;--sch:#2a3833;--on-sv:#bfc9c4;--inv:#dee4e1;--inv-on:#2b3
 .cf{position:relative}.cf>input{padding-inline-end:52px!important}
 .scanb{display:none;position:absolute;inset-inline-end:6px;top:50%;transform:translateY(-50%);width:42px;height:42px;border:0;border-radius:50%;background:transparent;color:var(--acc);cursor:pointer;place-items:center;z-index:2;padding:0}
 html.canscan .scanb{display:grid}
+html:not(.canscan) .cso{display:none!important}
 .scanb::before{content:'';width:24px;height:24px;background:currentColor;-webkit-mask:var(--bcm) center/contain no-repeat;mask:var(--bcm) center/contain no-repeat}
 :root{--bcm:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2M7 8v8M10.5 8v8M14 8v8M17 8v8'/%3E%3C/svg%3E")}
 body.nocost .cost{display:none!important}
@@ -1034,6 +1035,7 @@ if(D.readyState==='loading')D.addEventListener('DOMContentLoaded',boot);else boo
     <div class="card bsum"><div id="bSum" style="display:flex;flex:1;min-width:0"></div><button type="button" class="btn sec sm" id="bBack" style="flex:none;width:auto">تعديل المورد</button></div>
     <div id="bLines"></div>
     <button class="btn fab-in" id="bAddIt">+ إضافة صنف</button>
+    <button class="btn sec cso" id="bScanIt" style="margin-top:8px">📷 سكان كود الصنف</button>
     <div id="bTot" style="margin-top:12px"></div>
     <button class="btn" id="bSave">حفظ الشراء</button>
   </div>
@@ -2040,14 +2042,14 @@ const ACTS = [
   ['fabrics', 'fashion', 'أقمشة', 'Fabrics', '🧵', 'اللون|Color', 'الخامة|Material', 'cd', 'متر|m', 0, 'أبيض، كحلي|White, Navy', 'قطن، كتان|Cotton, Linen'],
   ['haberdashery', 'fashion', 'خردوات ومستلزمات خياطة', 'Sewing supplies', '🧷', 'اللون|Color', 'المقاس|Size', 'c', 'قطعة|pc', 0, 'أبيض، أسود|White, Black', 'صغير، كبير|Small, Large'],
 
-  ['pharmacy', 'health', 'صيدلية', 'Pharmacy', '💊', 'التركيز|Strength', 'الشكل الدوائي|Form', 'e', 'علبة|box', 0, '500mg، 1g|500mg, 1g', 'أقراص، شراب|Tablets, Syrup'],
-  ['vetpharm', 'health', 'صيدلية بيطرية', 'Vet pharmacy', '💉', 'التركيز|Strength', 'الشكل|Form', 'e', 'علبة|box', 0, '10ml، 50ml|10ml, 50ml', 'حقن، بودرة|Injection, Powder'],
-  ['medical', 'health', 'مستلزمات طبية', 'Medical supplies', '🩺', 'النوع|Type', 'المقاس|Size', 'e', 'قطعة|pc', 0, 'معقم، عادي|Sterile, Regular', 'S، M، L|S, M, L'],
+  ['pharmacy', 'health', 'صيدلية', 'Pharmacy', '💊', 'التركيز|Strength', 'الشكل الدوائي|Form', 'ep', 'علبة|box', 0, '500mg، 1g|500mg, 1g', 'أقراص، شراب|Tablets, Syrup'],
+  ['vetpharm', 'health', 'صيدلية بيطرية', 'Vet pharmacy', '💉', 'التركيز|Strength', 'الشكل|Form', 'ep', 'علبة|box', 0, '10ml، 50ml|10ml, 50ml', 'حقن، بودرة|Injection, Powder'],
+  ['medical', 'health', 'مستلزمات طبية', 'Medical supplies', '🩺', 'النوع|Type', 'المقاس|Size', 'ep', 'قطعة|pc', 0, 'معقم، عادي|Sterile, Regular', 'S، M، L|S, M, L'],
   ['meddevices', 'health', 'أجهزة طبية', 'Medical devices', '🩻', 'الموديل|Model', 'النوع|Type', 'n', 'قطعة|pc', 12, 'ديجيتال، زئبقي|Digital, Analog', 'ضغط، سكر|Blood pressure, Glucose'],
   ['cosmetics', 'health', 'مستحضرات تجميل', 'Cosmetics', '💄', 'الدرجة|Shade', 'الحجم|Size', 'e', 'قطعة|pc', 0, 'نود، روز|Nude, Rose', '30ml، 50ml|30ml, 50ml'],
   ['perfumes', 'health', 'عطور', 'Perfumes', '🌸', 'الحجم|Size', 'التركيز|Concentration', '', 'زجاجة|bottle', 0, '50ml، 100ml|50ml, 100ml', 'EDP، EDT|EDP, EDT'],
   ['salon', 'health', 'مستلزمات صالونات', 'Salon supplies', '💇', 'النوع|Type', 'الحجم|Size', 'e', 'قطعة|pc', 0, 'صبغة، شامبو|Dye, Shampoo', '250ml، 1L|250ml, 1L'],
-  ['supplements', 'health', 'مكملات غذائية', 'Supplements', '💪', 'النكهة|Flavor', 'الحجم|Size', 'e', 'علبة|box', 0, 'فانيليا، شوكولاتة|Vanilla, Chocolate', '1kg، 2kg|1kg, 2kg'],
+  ['supplements', 'health', 'مكملات غذائية', 'Supplements', '💪', 'النكهة|Flavor', 'الحجم|Size', 'ep', 'علبة|box', 0, 'فانيليا، شوكولاتة|Vanilla, Chocolate', '1kg، 2kg|1kg, 2kg'],
 
   ['supermarket', 'food', 'سوبر ماركت', 'Supermarket', '🛒', 'النوع/النكهة|Type/Flavor', 'الحجم|Size', 'e', 'قطعة|pc', 0, 'سادة، فراولة|Plain, Strawberry', '250g، 1kg|250g, 1kg'],
   ['grocery', 'food', 'بقالة وعطارة', 'Grocery & spices', '🧂', 'النوع|Type', 'العبوة|Pack', 'ed', 'كجم|kg', 0, 'كمون، فلفل|Cumin, Pepper', 'سايب، معبأ|Loose, Packed'],
@@ -2082,7 +2084,7 @@ const ACTS = [
   ['stationery', 'leisure', 'مكتبة وأدوات مكتبية', 'Stationery', '✏️', 'اللون|Color', 'النوع|Type', 'c', 'قطعة|pc', 0, 'أزرق، أحمر|Blue, Red', 'جاف، رصاص|Pen, Pencil'],
   ['books', 'leisure', 'كتب', 'Books', '📚', 'الطبعة|Edition', 'الغلاف|Cover', '', 'قطعة|pc', 0, 'الأولى، التانية|1st, 2nd', 'عادي، فاخر|Paperback, Hardcover'],
   ['toys', 'leisure', 'لعب أطفال', 'Toys', '🪀', 'السن|Age', 'الموديل|Model', '', 'قطعة|pc', 0, '3+، 6+|3+, 6+', 'صغير، كبير|Small, Large'],
-  ['baby', 'leisure', 'مستلزمات أطفال', 'Baby supplies', '🍼', 'المقاس|Size', 'النوع|Type', 'e', 'قطعة|pc', 0, '1، 2، 3|1, 2, 3', 'حفاض، لبن|Diapers, Formula'],
+  ['baby', 'leisure', 'مستلزمات أطفال', 'Baby supplies', '🍼', 'المقاس|Size', 'النوع|Type', 'ep', 'قطعة|pc', 0, '1، 2، 3|1, 2, 3', 'حفاض، لبن|Diapers, Formula'],
   ['sports', 'leisure', 'أدوات رياضية', 'Sports equipment', '⚽', 'اللون|Color', 'المقاس|Size', 'c', 'قطعة|pc', 0, 'أسود، أحمر|Black, Red', '4، 5|4, 5'],
   ['bikes', 'leisure', 'دراجات', 'Bicycles', '🚲', 'اللون|Color', 'المقاس|Size', 'cn', 'قطعة|pc', 12, 'أسود، أحمر|Black, Red', '20، 26|20", 26"'],
   ['crafts', 'leisure', 'خامات ورسم', 'Arts & crafts', '🎨', 'اللون|Color', 'المقاس|Size', 'c', 'قطعة|pc', 0, 'أحمر، أزرق|Red, Blue', 'A4، A3|A4, A3'],
@@ -2102,10 +2104,10 @@ const ACTS = [
   ['pets', 'other', 'مستلزمات حيوانات أليفة', 'Pet supplies', '🐾', 'النوع|Type', 'الحجم|Size', 'e', 'قطعة|pc', 0, 'قطط، كلاب|Cats, Dogs', '1kg، 4kg|1kg, 4kg'],
   ['agri', 'other', 'زراعة وبذور ومبيدات', 'Seeds & agriculture', '🌱', 'النوع|Type', 'العبوة|Pack', 'e', 'قطعة|pc', 0, 'طماطم، خيار|Tomato, Cucumber', '100g، 1kg|100g, 1kg'],
   ['kiosk', 'other', 'كشك وسجائر', 'Kiosk & tobacco', '🚬', 'النوع|Type', 'العبوة|Pack', 'e', 'قطعة|pc', 0, 'كليوباترا، مارلبورو|Cleopatra, Marlboro', 'علبة، خرطوشة|Pack, Carton'],
-  ['wholesale', 'other', 'جملة وتوزيع', 'Wholesale & distribution', '📦', 'النوع|Type', 'العبوة|Pack', 'e', 'كرتونة|ctn', 0, 'عادي، لايت|Regular, Light', '12، 24|12, 24'],
+  ['wholesale', 'other', 'جملة وتوزيع', 'Wholesale & distribution', '📦', 'النوع|Type', 'العبوة|Pack', 'ep', 'كرتونة|ctn', 0, 'عادي، لايت|Regular, Light', '12، 24|12, 24'],
   ['printing', 'other', 'مطبعة وتصوير', 'Printing & copy', '🖨️', 'المقاس|Size', 'النوع|Type', '', 'قطعة|pc', 0, 'A4، A3|A4, A3', 'أبيض، ملون|B&W, Color'],
   ['custom', 'other', 'نشاط آخر (مخصص)', 'Other (custom)', '🏪', 'الخاصية 1|Option 1', 'الخاصية 2|Option 2', '', 'قطعة|pc', 0, '', '']
-].map(a => ({ id: a[0], g: a[1], ar: a[2], en: a[3], ic: a[4], f1: a[5], f2: a[6], color: a[7].includes('c'), exp: a[7].includes('e'), sn: a[7].includes('n'), dec: a[7].includes('d'), unit: a[8], war: a[9], x1: a[10], x2: a[11] }));
+].map(a => ({ id: a[0], g: a[1], ar: a[2], en: a[3], ic: a[4], f1: a[5], f2: a[6], color: a[7].includes('c'), exp: a[7].includes('e'), sn: a[7].includes('n'), dec: a[7].includes('d'), pk: a[7].includes('p'), unit: a[8], war: a[9], x1: a[10], x2: a[11] }));
 const ACTMAP = Object.fromEntries(ACTS.map(a => [a.id, a]));
 const LL = s => { const p = String(s || '').split('|'); return EN && p[1] != null ? p[1] : p[0]; };
 const UNITS = ['قطعة|pc', 'علبة|box', 'شريط|strip', 'زجاجة|bottle', 'جوز|pair', 'كجم|kg', 'جم|g', 'لتر|L', 'متر|m', 'كرتونة|ctn', 'دستة|dozen', 'باكو|pack', 'شكارة|bag', 'لفة|roll', 'طن|ton'];
@@ -2114,7 +2116,7 @@ function actPreset() { return ACTMAP[APP_ACT || S.settings.act] || ACTMAP.clothe
 function A() {
   const p = actPreset(), o = (!APP_ACT && S.settings.actCfg) || {}, has = k => o[k] != null && o[k] !== '';
   return { id: p.id, ic: p.ic, name: tx(p.ar, p.en), f1: has('f1') ? o.f1 : LL(p.f1), f2: has('f2') ? o.f2 : LL(p.f2),
-    color: has('color') ? !!o.color : p.color, exp: has('exp') ? !!o.exp : p.exp, sn: has('sn') ? !!o.sn : p.sn, dec: has('dec') ? !!o.dec : p.dec,
+    color: has('color') ? !!o.color : p.color, exp: has('exp') ? !!o.exp : p.exp, sn: has('sn') ? !!o.sn : p.sn, dec: has('dec') ? !!o.dec : p.dec, pk: has('pk') ? !!o.pk : !!p.pk,
     unit: has('unit') ? o.unit : LL(p.unit), war: has('war') ? +o.war : p.war, x1: LL(p.x1), x2: LL(p.x2) };
 }
 const unitOf = it => (it && it.unit) || A().unit;
@@ -2124,6 +2126,36 @@ const warOf = it => it && it.war != null && it.war !== '' ? +it.war : A().war;
 const isPiece = u => ['قطعة', 'pc', 'piece'].includes(String(u).trim().toLowerCase());
 const perU = it => tx('سعر ال' + unitOf(it), 'Price per ' + unitOf(it));
 const dims = () => { const a = A(); return a.f1 + '/' + a.f2; };
+/* ================= pack units: box › strip › tablet, box › sachet … =================
+   Stock, cost and price are kept in the smallest unit (tablet, sachet…). A variant with v.pack = { u: ['علبة','شريط','قرص'], n: [3, 10] }
+   has 3 strips in a box and 10 tablets in a strip. Sale/purchase lines keep pu (unit name) and pn (smallest units in it) for display. */
+const PACKS = [
+  ['علبة', 'شريط', 'قرص', 3, 10], ['علبة', 'شريط', 'كبسولة', 2, 10], ['علبة', 'شريط', 'لبوسة', 2, 5], ['علبة', 'شريط', 'قرص استحلاب', 2, 8],
+  ['علبة', 'ساشيه', '', 10], ['علبة', 'أمبول', '', 3], ['علبة', 'فيال', '', 1], ['علبة', 'سرنجة', '', 5], ['علبة', 'قلم', '', 5], ['علبة', 'خرطوشة', '', 5],
+  ['علبة', 'لزقة', '', 5], ['علبة', 'نقط فردية', '', 20], ['علبة', 'شريط اختبار', '', 50], ['علبة', 'كيس', '', 10], ['علبة', 'قطعة', '', 10],
+  ['باكو', 'قطعة', '', 10], ['باكو', 'حفاضة', '', 30], ['كرتونة', 'علبة', '', 12], ['كرتونة', 'زجاجة', '', 12], ['كرتونة', 'كيس محلول', '', 20], ['دستة', 'قطعة', '', 12],
+  ['زجاجة'], ['علبة'], ['أنبوبة'], ['بخاخ'], ['برطمان'], ['عبوة'], ['كيس'], ['قطعة'], ['جهاز'], ['لفة']];
+const UEN = { 'علبة': 'box', 'شريط': 'strip', 'قرص': 'tablet', 'كبسولة': 'capsule', 'لبوسة': 'suppository', 'قرص استحلاب': 'lozenge', 'ساشيه': 'sachet', 'أمبول': 'ampoule', 'فيال': 'vial',
+  'سرنجة': 'syringe', 'قلم': 'pen', 'خرطوشة': 'cartridge', 'لزقة': 'patch', 'نقط فردية': 'single dose', 'شريط اختبار': 'test strip', 'كيس': 'bag', 'قطعة': 'piece', 'باكو': 'pack',
+  'حفاضة': 'diaper', 'كرتونة': 'carton', 'زجاجة': 'bottle', 'كيس محلول': 'IV bag', 'دستة': 'dozen', 'أنبوبة': 'tube', 'بخاخ': 'spray', 'برطمان': 'jar', 'عبوة': 'can', 'جهاز': 'device', 'لفة': 'roll' };
+const un = u => EN ? (UEN[u] || u) : u;
+const pkOf = v => v && v.pack && v.pack.u && v.pack.u.length > 1 ? v.pack : null;
+// [[unit, smallest units in it]] from the biggest unit to the smallest
+function pkUnits(pk) { const out = []; for (let i = 0; i < pk.u.length; i++) { let m = 1; for (let j = i; j < pk.u.length - 1; j++) m *= +pk.n[j] || 1; out.push([pk.u[i], m]); } return out; }
+const baseU = (it, v) => { const pk = pkOf(v); return pk ? pk.u[pk.u.length - 1] : unitOf(it); };
+// 75 tablets → "2 علبة + 1 شريط + 5 قرص"
+function pkTxt(it, v, q) {
+  const pk = pkOf(v); q = +q || 0; if (!pk) return fmt(q) + (isPiece(unitOf(it)) ? '' : ' ' + un(unitOf(it)));
+  if (q < 0) return '− ' + pkTxt(it, v, -q);
+  let r = Math.round(q * 1000) / 1000; const parts = [];
+  for (const [u, m] of pkUnits(pk)) { const k = Math.floor(r / m + 1e-9); if (k > 0) { parts.push(fmt(k) + ' ' + un(u)); r = Math.round((r - k * m) * 1000) / 1000; } }
+  if (r > 0.0005) parts.push(fmt(r) + ' ' + un(pk.u[pk.u.length - 1]));
+  return parts.length ? parts.join(' + ') : '0 ' + un(pk.u[0]);
+}
+const pkMoney = x => Math.round((+x || 0) * 100) / 100;
+// price of each unit: "علبة 105 · شريط 35 · قرص 3.5"
+function pkPrices(v, base) { const pk = pkOf(v); if (!pk || !(base > 0)) return ''; return pkUnits(pk).map(([u, m]) => un(u) + ' ' + fmt(pkMoney(base * m))).join(' · '); }
+
 function addMonths(ts, m) { const d = new Date(ts); d.setMonth(d.getMonth() + (+m || 0)); return d.getTime(); }
 const expDays = () => +S.settings.expDays || 60;
 const exTs = ex => new Date(ex + 'T00:00').getTime();
@@ -2329,6 +2361,7 @@ function calc() {
 }
 function itemStock(it) { return it.variants.reduce((s, v) => s + (C.V[v.id] ? C.V[v.id].stock : 0), 0); }
 function itemPriceText(it) {
+  if (it.variants.length === 1 && pkOf(it.variants[0])) { const p = C.V[it.variants[0].id].price; return p > 0 ? pkPrices(it.variants[0], p) + ' ' + tx('ج.م', 'EGP') : '—'; }
   const ps = it.variants.map(v => C.V[v.id].price).filter(p => p > 0);
   if (!ps.length) return '—';
   const a = Math.min(...ps), b = Math.max(...ps);
@@ -2613,8 +2646,10 @@ function editCust(c) {
 /* ================= returns ================= */
 /* ================= RETURNS & EXCHANGE tab ================= */
 const EXCH = 'استبدال';
-const REASONS = [['size', 'المقاس مش مظبوط', 'Wrong size'], ['color', 'اللون', 'Colour'], ['dmg', 'تالف', 'Damaged'], ['mind', 'العميل غيّر رأيه', 'Changed mind'], ['other', 'سبب تاني', 'Other']];
-const reasonTxt = k => { const r = REASONS.find(x => x[0] === k); return r ? tx(r[1], r[2]) : (k || ''); };
+const REASONS_ALL = [['size', 'المقاس مش مظبوط', 'Wrong size'], ['color', 'اللون', 'Colour'], ['wrong', 'صنف أو تركيز غلط', 'Wrong item / strength'], ['exp', 'منتهي أو قرب ينتهي', 'Expired / near expiry'], ['dmg', 'تالف', 'Damaged'], ['mind', 'العميل غيّر رأيه', 'Changed mind'], ['other', 'سبب تاني', 'Other']];
+// clothes shops get size/colour reasons; other shops get wrong item and expiry reasons
+const REASONS = REASONS_ALL.filter(r => (!APP_ACT || (ACTMAP[APP_ACT] || {}).g === 'fashion') ? !['wrong', 'exp'].includes(r[0]) : !['size', 'color'].includes(r[0]));
+const reasonTxt = k => { const r = REASONS_ALL.find(x => x[0] === k); return r ? tx(r[1], r[2]) : (k || ''); };
 // the supplier a piece came from: the last purchase of that colour/size before the sale
 function supOf(vid, before) {
   let best = null; for (const t of S.txns) if (t.type === 'buy' && (!before || t.ts <= before) && t.lines.some(l => l.vid === vid) && (!best || t.ts > best.ts)) best = t;
@@ -2647,7 +2682,7 @@ function loadRet(t) {
   while (t && t.replacedBy) { const n = S.txns.find(x => x.id === t.replacedBy); if (!n) break; toast(tx('الفاتورة دي اتستبدلت — فتحتلك الفاتورة الجديدة', 'This invoice was exchanged — opened the new one'), 3000); t = n; }
   $('#rQ').value = rno(t);
   RT = { t, q: {}, why: {}, wtxt: {}, add: [], pay: null, cname: '', cphone: '' };
-  const rows = retRows(t); if (rows.length === 1 && rows[0].max === 1) RT.q[rows[0].key] = 1;
+  const rows = retRows(t); if (rows.length === 1 && rows[0].max === (rows[0].l.pn || 1)) RT.q[rows[0].key] = rows[0].max;
   renderRet();
 }
 function retTotals() {
@@ -2670,15 +2705,15 @@ function renderRet() {
       ${it && it.photo ? `<div class="pht sm1" data-ph="${it.photo}"><img alt=""></div>` : ''}
       <div style="flex:1;min-width:0"><div class="b">${esc(it ? it.name : '؟')}${it && it.brand ? ` <span class="sm mut">· ${esc(it.brand)}</span>` : ''}</div>
         <div class="sm">${v ? esc([v.color, v.size].filter(Boolean).join(' · ')) : ''} · <span class="ltr">${v ? esc(v.code || fmtCode(v.serial)) : ''}</span></div>
-        <div class="sm">${r.l.disc ? `<span style="color:var(--red)">${tx('اتباع بخصم', 'Sold at a discount')} ${fmt(r.l.disc)}% — ${tx('من', 'from')} ${egp(r.l.list)} ${tx('لـ', 'to')} <b>${egp(r.l.price)}</b></span>` : `${tx('اتباع بدون خصم', 'Sold without discount')} · <b>${egp(r.l.price)}</b>`}</div>
+        <div class="sm">${r.l.disc ? `<span style="color:var(--red)">${tx('اتباع بخصم', 'Sold at a discount')} ${fmt(r.l.disc)}% — ${tx('من', 'from')} ${egp(pkMoney(r.l.list * (r.l.pn || 1)))} ${tx('لـ', 'to')} <b>${egp(pkMoney(r.l.price * (r.l.pn || 1)))}</b></span>` : `${tx('اتباع بدون خصم', 'Sold without discount')} · <b>${egp(pkMoney(r.l.price * (r.l.pn || 1)))}</b>`}${r.l.pu ? ' / ' + esc(un(r.l.pu)) : ''}</div>
         ${r.carried ? `<div class="sm mut">${tx('من فاتورة', 'From invoice')} <span class="ltr">#${rno(r.src)}</span> ${ri ? (ri.ok ? '' : '· ' + tx('عدّت فترة الاسترجاع', 'past the return period')) : ''}</div>` : ''}</div>
-      <div class="stp"><button type="button" class="icb" data-d="-1">−</button><span class="n">${fmt(q)}</span><button type="button" class="icb" data-d="1">+</button></div></div>
+      <div class="stp"><button type="button" class="icb" data-d="-1">−</button><span class="n">${v && pkOf(v) ? esc(pkTxt(it, v, q)) : fmt(q)}</span><button type="button" class="icb" data-d="1">+</button></div></div>
       ${q ? `<div class="chips" style="margin-top:8px">${REASONS.map(x => `<button type="button" class="vchip ${w === x[0] ? 'on' : ''} ${x[0] === 'dmg' ? 'dg' : ''}" data-why="${x[0]}">${tx(x[1], x[2])}</button>`).join('')}</div>
         ${w === 'other' ? `<input data-wt placeholder="${tx('اكتب السبب', 'Write the reason')}" value="${esc(RT.wtxt[r.key] || '')}" style="margin-top:6px">` : ''}
         <div class="sm" style="margin-top:6px;${w === 'dmg' ? 'color:var(--red);font-weight:700' : ''}">🏭 ${tx('المورد:', 'Supplier:')} ${sup ? esc(sup) : tx('غير معروف', 'unknown')}${w === 'dmg' ? ' — ' + tx('القطعة مش هترجع المخزن، هتتحط في مرتجعات المورد', 'not back to stock — goes to the supplier returns') : ''}</div>` : ''}
       </div>`; }).join('') : `<div class="empty">${tx('كل بنود الفاتورة دي اترجعت.', 'Everything on this invoice was returned.')}</div>`;
-  const adds = RT.add.map((a, i) => { const [it, v] = findVariant(a.vid); return `<div class="rtc on" data-a="${i}"><div style="display:flex;gap:10px;align-items:center"><div style="flex:1;min-width:0"><div class="b">${esc(it.name)}</div><div class="sm">${esc([v.color, v.size].filter(Boolean).join(' · '))} · ${a.disc ? `<s class="mut">${egp(a.list)}</s> ` : ''}<b>${egp(a.price)}</b>${a.promo ? ` <span class="pill p-amb">${esc(a.promo)}</span>` : ''}</div></div>
-    <div class="stp"><button type="button" class="icb" data-ad="-1">−</button><span class="n">${fmt(a.qty)}</span><button type="button" class="icb" data-ad="1">+</button></div></div></div>`; }).join('');
+  const adds = RT.add.map((a, i) => { const [it, v] = findVariant(a.vid); return `<div class="rtc on" data-a="${i}"><div style="display:flex;gap:10px;align-items:center"><div style="flex:1;min-width:0"><div class="b">${esc(it.name)}</div><div class="sm">${esc([v.color, v.size].filter(Boolean).join(' · '))} · ${a.disc ? `<s class="mut">${egp(a.list)}</s> ` : ''}<b>${egp(a.price)}</b>${pkOf(v) ? ' / ' + esc(un(baseU(it, v))) : ''}${a.promo ? ` <span class="pill p-amb">${esc(a.promo)}</span>` : ''}</div></div>
+    <div class="stp"><button type="button" class="icb" data-ad="-1">−</button><span class="n">${pkOf(v) ? esc(pkTxt(it, v, a.qty)) : fmt(a.qty)}</span><button type="button" class="icb" data-ad="1">+</button></div></div></div>`; }).join('');
   const refund = D < -0.004, extra = refund || D > 0.004;
   if (!RT.pay || (RT.pay === CREDIT && !refund && !t.cid)) RT.pay = t.pay === CREDIT && t.cid ? CREDIT : t.pay && t.pay !== CREDIT && t.pay !== EXCH ? t.pay : 'كاش';
   const walletLbl = Object.assign([CREDIT], { label: refund ? tx('رصيد للعميل', 'Store credit') : tx('آجل على العميل', 'On credit') });
@@ -2707,7 +2742,7 @@ function retPickItem(it, v) {
   if (v) return pick(v);
   const vs = it.variants.filter(x => C.V[x.id].stock > 0);
   if (vs.length === 1) return pick(vs[0]);
-  $('#rPick').innerHTML = `<div class="chips" style="margin-top:8px">${it.variants.map(x => `<button type="button" class="vchip" data-pv="${x.id}" ${C.V[x.id].stock > 0 ? '' : 'disabled'}>${vlabel(x)}<small>${tx('متاح', 'left')} ${fmt(C.V[x.id].stock)}</small></button>`).join('')}</div>`;
+  $('#rPick').innerHTML = `<div class="chips" style="margin-top:8px">${it.variants.map(x => `<button type="button" class="vchip" data-pv="${x.id}" ${C.V[x.id].stock > 0 ? '' : 'disabled'}>${vlabel(x)}<small>${tx('متاح', 'left')} ${esc(pkTxt(it, x, C.V[x.id].stock))}</small></button>`).join('')}</div>`;
   $('#rPick').onclick = e => { const b = e.target.closest('[data-pv]'); if (b) pick(it.variants.find(x => x.id === b.dataset.pv)); };
 }
 $('#rBody').addEventListener('click', e => {
@@ -2716,8 +2751,9 @@ $('#rBody').addEventListener('click', e => {
   const row = e.target.closest('[data-k]');
   if (row) { const k = row.dataset.k, r = retRows(RT.t).find(x => x.key === k); if (!r) return;
     const ck = e.target.closest('[data-ck]'), d = e.target.closest('[data-d]'), w = e.target.closest('[data-why]');
-    if (ck) { RT.q[k] = ck.checked ? Math.min(r.max, 1) : 0; renderRet(); return; }
-    if (d) { RT.q[k] = Math.max(0, Math.min(r.max, (RT.q[k] || 0) + +d.dataset.d)); renderRet(); return; }
+    const step = r.l.pn || 1;
+    if (ck) { RT.q[k] = ck.checked ? Math.min(r.max, step) : 0; renderRet(); return; }
+    if (d) { RT.q[k] = Math.max(0, Math.min(r.max, (RT.q[k] || 0) + +d.dataset.d * step)); renderRet(); return; }
     if (w) { RT.why[k] = w.dataset.why; renderRet(); return; }
     return; }
   const a = e.target.closest('[data-a]');
@@ -3021,11 +3057,11 @@ const RC_CSS = `.rc{font-family:system-ui,'Segoe UI',Tahoma,Arial,sans-serif;col
 .rc .ln{margin:5px 0}.rc .ln .nm{font-weight:600}.rc .ln .vr{font-size:11.5px;color:#333}.rc .tt{font-size:16px;font-weight:800}.rc .lg{font-size:30px;line-height:1.1}.rc .n{direction:ltr;unicode-bidi:isolate}`;
 document.head.insertAdjacentHTML('beforeend', '<style>' + RC_CSS + '</style>');
 function rcLines(t) {
-  return t.lines.map((l, i) => { const [it, v] = findVariant(l.vid) || [], w = it && t.type === 'sell' ? warOf(it) : 0; return { name: it ? it.name : 'صنف', vr: v ? [v.color, v.size].filter(Boolean).join(' — ') : '', sn: l.sn || [], war: w > 0 ? addMonths(t.ts, w) : 0, qty: l.qty, price: l.price, list: l.list || l.price, disc: l.disc || 0, back: t.type === 'sell' ? returnedQty(t.id, i) : 0, why: l.why ? (l.why === 'other' && l.whyTxt ? l.whyTxt : reasonTxt(l.why)) : '' }; });
+  return t.lines.map((l, i) => { const [it, v] = findVariant(l.vid) || [], w = it && t.type === 'sell' ? warOf(it) : 0; const pn = l.pn || 1; return { name: it ? it.name : 'صنف', vr: [v ? [v.color, v.size].filter(Boolean).join(' — ') : '', l.pu ? un(l.pu) : ''].filter(Boolean).join(' · '), sn: l.sn || [], war: w > 0 ? addMonths(t.ts, w) : 0, qty: l.qty / pn, price: l.price * pn, list: (l.list || l.price) * pn, disc: l.disc || 0, back: t.type === 'sell' ? returnedQty(t.id, i) / pn : 0, why: l.why ? (l.why === 'other' && l.whyTxt ? l.whyTxt : reasonTxt(l.why)) : '' }; });
 }
 function rcCarry(t) {
   return (t.carry || []).map(c => { const s = S.txns.find(x => x.id === c.ref), l = s && s.lines[c.li]; if (!l) return null; const [it, v] = findVariant(l.vid);
-    return { name: it ? it.name : 'صنف', vr: v ? [v.color, v.size].filter(Boolean).join(' — ') : '', qty: c.qty, price: l.price, from: rno(s) }; }).filter(Boolean);
+    return { name: it ? it.name : 'صنف', vr: [v ? [v.color, v.size].filter(Boolean).join(' — ') : '', l.pu ? un(l.pu) : ''].filter(Boolean).join(' · '), qty: c.qty / (l.pn || 1), price: l.price * (l.pn || 1), from: rno(s) }; }).filter(Boolean);
 }
 function rcModel(t) {
   const lines = rcLines(t), sub = lines.reduce((s, l) => s + l.qty * l.price, 0), gross = lines.reduce((s, l) => s + l.qty * l.list, 0), tax = taxOf(sub, t.tax);
@@ -3184,6 +3220,7 @@ function ac(input, onPick, opts = {}) {
     if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); hi = (hi + (e.key === 'ArrowDown' ? 1 : -1) + els.length) % els.length; els.forEach((x, i) => x.classList.toggle('hi', i === hi)); }
     else if (e.key === 'Enter' && hi >= 0 && list[hi]) { e.preventDefault(); pick(list[hi]); }
     else if (e.key === 'Enter' && byCodePick(input.value)) e.preventDefault();
+    else if (e.key === 'Enter' && opts.onUnknown && looksCode(input.value) && !findItems(input.value).length) { e.preventDefault(); hide(); opts.onUnknown(input.value.trim()); }
     else if (e.key === 'Escape') hide();
   });
   box.addEventListener('mousedown', e => e.preventDefault());
@@ -3322,15 +3359,15 @@ function renderStock() {
     const top = ['out', 'safety', 'rop', 'soon'].find(s => sts.includes(s)), xw = A().exp ? exw(it) : '';
     const rows = it.variants.map(v => { const r = C.V[v.id]; return `<tr>
       <td>${vlabel(v)}<div class="sm mut ltr">${esc(v.serial)}</div>${r.lots.slice(0, 3).map(l => `<div class="sm">${lotTxt(l)} <span class="mut">(${fmt(l.qty)})</span></div>`).join('')}${r.sns.length ? `<div class="sm mut">${fmt(r.sns.length)} ${tx('سيريال متاح', 'serials in stock')}</div>` : ''}</td>
-      <td class="b" style="color:${r.stock > 0 ? 'inherit' : 'var(--red)'}">${fmt(r.stock)}</td>
-      <td class="mut">${fmt(v.safety)}</td>
-      <td>${r.price ? fmt(r.price) : '—'}</td>
+      <td class="b" style="color:${r.stock > 0 ? 'inherit' : 'var(--red)'}">${pkOf(v) ? esc(pkTxt(it, v, r.stock)) + `<div class="sm mut" style="font-weight:400">${fmt(r.stock)} ${esc(un(baseU(it, v)))}</div>` : fmt(r.stock)}</td>
+      <td class="mut">${pkOf(v) ? esc(pkTxt(it, v, v.safety || 0)) : fmt(v.safety)}</td>
+      <td>${r.price ? (pkOf(v) ? esc(pkPrices(v, r.price)).replace(/ · /g, '<br>') : fmt(r.price)) : '—'}</td>
       <td>${pill(r.status)}</td></tr>`; }).join('');
     return `<div class="item ${openItems.has(it.id) ? 'open' : ''}" data-id="${it.id}">
       <div class="ihead">${it.photo ? `<div class="pht sm1" data-ph="${it.photo}" style="margin-inline-end:10px"><img alt=""></div>` : ''}<div class="t"><div class="nm">${esc(it.name)}${it.brand ? ` <span class="sm mut">· ${esc(it.brand)}</span>` : ''}</div>
         <div class="sm mut"><span class="ltr">${esc(it.serial)}</span>${it.code ? ' · كود <span class="ltr">' + esc(it.code) + '</span>' : ''} · ${itemPriceText(it)}</div>
         <div style="margin-top:4px">${A().color ? [...new Set(it.variants.map(v => v.color))].map(dot).join('') : ''} ${top ? pill(top) : ''} ${xw ? pill(xw) : ''}</div></div>
-        <div class="q"><div class="n">${fmt(stk)}</div><div class="sm mut">${esc(unitOf(it))}</div></div></div>
+        ${it.variants.length === 1 && pkOf(it.variants[0]) ? `<div class="q"><div class="n">${fmt(Math.floor(stk / pkUnits(it.variants[0].pack)[0][1] + 1e-9))}</div><div class="sm mut">${esc(un(it.variants[0].pack.u[0]))}</div><div class="sm mut" style="max-width:120px">${esc(pkTxt(it, it.variants[0], stk))}</div></div>` : `<div class="q"><div class="n">${fmt(stk)}</div><div class="sm mut">${esc(un(unitOf(it)))}</div></div>`}</div>
       <div class="ibody">
         <table><tr><th>${esc(dims())}</th><th>المخزون</th><th>الأمان</th><th>السعر</th><th></th></tr>${rows}</table>
         <div class="sm mut" style="margin-top:8px">مدة التوريد: ${fmt(it.lead)} يوم · التسعير: ${pmText(it)}</div>
@@ -3413,15 +3450,25 @@ function itemMenu(it) {
 }
 
 /* ================= SELL page ================= */
-let cart = [], sSel = null, sVar = null, pickSn = new Set();
+let cart = [], sSel = null, sVar = null, pickSn = new Set(), sU = 0; const lastU = {};
 const cartSn = () => cart.flatMap(l => l.sn || []);
 const inCart = vid => cart.filter(l => l.vid === vid).reduce((s, l) => s + l.qty, 0);
 ac($('#sItem'), (it, v) => pickSell(it, v), { scan: true,
   onType: () => { sSel = null; sVar = null; $('#sPick').innerHTML = ''; },
-  empty: q => `لا يوجد صنف باسم «${esc(q)}». سجّله من تبويب الشراء أولاً.`
+  empty: q => `لا يوجد صنف باسم «${esc(q)}». سجّله من تبويب الشراء أولاً.` + (looksCode(q) && can('buy') ? `<button type="button" class="btn sec sm" data-act="reg" style="margin-top:8px">${tx('سجّل الكود ده كصنف جديد', 'Register this code as a new item')}</button>` : ''),
+  onUnknown: t => regCode(t), onAct: (a, q) => { if (a === 'reg') regCode(q.trim()); }
 });
+const looksCode = q => /^[0-9A-Za-z-]{6,}$/.test(String(q).trim()) && /\d{4}/.test(q);
+// a scanned code that no item has: register it once through a purchase, then it sells and buys by scanning
+async function regCode(code) {
+  if (!code) return;
+  if (!can('buy')) return toast(tx('الكود ده مش متسجل لأي صنف', 'This code is not registered to any item'));
+  if (!(await mdConfirm(tx(`الكود <b class="ltr">${esc(code)}</b> مش متسجل لأي صنف. تسجّله دلوقتي في فاتورة شراء؟ بعد كده هتبيع وتشتري بالسكان على طول.`, `The code <b class="ltr">${esc(code)}</b> is not registered. Register it now in a purchase? After that you buy and sell it by scanning.`),
+    { title: tx('كود جديد', 'New code'), ok: tx('سجّل الصنف', 'Register item') }))) return;
+  $('#sItem').value = ''; go('buy'); buyScan(code);
+}
 function pickSell(it, pv) {
-  sSel = it; sVar = null; pickSn = new Set();
+  sSel = it; sVar = null; pickSn = new Set(); sU = null;
   const hit = snHit; snHit = null;
   const avail = it.variants.filter(v => C.V[v.id].stock - inCart(v.id) > 0);
   if (pv) { if (avail.includes(pv)) sVar = pv; else toast(`${vtext(it, pv)} — مفيش منه في المخزون`); }
@@ -3434,22 +3481,27 @@ function renderPick() {
   const chips = it.variants.map(v => {
     const left = C.V[v.id].stock - inCart(v.id);
     const lt = A().exp && C.V[v.id].lots[0];
-    return `<button class="vchip ${sVar && sVar.id === v.id ? 'on' : ''}" data-v="${v.id}" ${left > 0 ? '' : 'disabled'}>${vlabel(v)}<small>متاح ${fmt(left)}</small>${lt && lt.exp ? `<small>${lotTxt({ exp: lt.exp })}</small>` : ''}</button>`;
+    return `<button class="vchip ${sVar && sVar.id === v.id ? 'on' : ''}" data-v="${v.id}" ${left > 0 ? '' : 'disabled'}>${vlabel(v)}<small>${tx('متاح', 'left')} ${esc(pkTxt(it, v, left))}</small>${lt && lt.exp ? `<small>${lotTxt({ exp: lt.exp })}</small>` : ''}</button>`;
   }).join('');
   const r = sVar ? C.V[sVar.id] : null, snMode = !!(r && r.sns.length), avSn = r ? r.sns.filter(x => !cartSn().includes(x)) : [];
+  const pk = sVar && pkOf(sVar), us = pk ? pkUnits(pk) : null;
+  if (us && (sU == null || sU >= us.length)) sU = lastU[sVar.id] != null && lastU[sVar.id] < us.length ? lastU[sVar.id] : 0;
+  const um = us ? us[sU][1] : 1, rp = r && r.price ? (us ? pkMoney(r.price * um) : r.price) : 0;
   $('#sPick').innerHTML = `<label>${tx('اختر ', 'Choose ')}${esc(dims())}</label><div class="chips" id="sChips">${chips}</div>
     ${sVar && snMode ? `<label>${tx('اختر السيريال / IMEI', 'Choose serial / IMEI')}</label><div class="chips" id="sSn">${avSn.map(x => `<button type="button" class="vchip ${pickSn.has(x) ? 'on' : ''}" data-sn="${esc(x)}"><span class="ltr">${esc(x)}</span></button>`).join('')}</div>` : ''}
     ${sVar && r.lots.length && r.lots[0].exp ? `<div class="hint">${tx('هيتباع من الأقرب انتهاءً:', 'Sold from the earliest expiry:')} ${lotTxt(r.lots[0])}</div>` : ''}
+    ${us ? `<label>${tx('هتبيع بـ', 'Sell by')}</label><div class="chips" id="sUn">${us.map(([u, m], i) => `<button type="button" class="vchip ${i === sU ? 'on' : ''}" data-u="${i}" ${r.stock - inCart(sVar.id) >= m ? '' : 'disabled'}>${esc(un(u))}<small>${r.price ? fmt(pkMoney(r.price * m)) + ' ' + tx('ج.م', 'EGP') : (m > 1 ? fmt(m) + ' ' + esc(un(pk.u[pk.u.length - 1])) : '')}</small></button>`).join('')}</div>` : ''}
     ${sVar ? `<div class="row" style="margin-top:6px">
-      <div><label>${tx('الكمية', 'Quantity')} (${esc(unitOf(it))})</label><input id="sQty" inputmode="${decOf(it) ? 'decimal' : 'numeric'}" value="${snMode ? pickSn.size : 1}" ${snMode ? 'readonly' : ''}></div>
-      <div><label>${perU(it)} (ج.م)</label><input id="sPrice" inputmode="decimal" value="${r.price ? r.price : ''}" ${!can('discount') && r.price ? 'readonly' : ''}></div></div>
+      <div><label>${tx('الكمية', 'Quantity')} (${esc(us ? un(us[sU][0]) : unitOf(it))})</label><input id="sQty" inputmode="${decOf(it) && !us ? 'decimal' : 'numeric'}" value="${snMode ? pickSn.size : 1}" ${snMode ? 'readonly' : ''}></div>
+      <div><label>${us ? tx('سعر ال' + us[sU][0], 'Price per ' + un(us[sU][0])) : perU(it)} (ج.م)</label><input id="sPrice" inputmode="decimal" value="${rp || ''}" ${!can('discount') && rp ? 'readonly' : ''}></div></div>
       <div class="row" ${can('discount') ? '' : 'style="display:none"'}>
       <div><label>خصم %</label><input id="sDisc" inputmode="decimal" placeholder="0"></div>
-      <div><label>السعر بعد الخصم</label><input id="sNet" inputmode="decimal" placeholder="${r.price ? r.price : ''}"></div></div>
-      ${can('discount') ? '<div class="hint">اكتب نسبة الخصم أو السعر بعد الخصم مباشرة — التاني بيتحسب لوحده.<span class="cost"> التكلفة: ' + egp(r.avg) + '</span></div>' : ''}
+      <div><label>السعر بعد الخصم</label><input id="sNet" inputmode="decimal" placeholder="${rp || ''}"></div></div>
+      ${can('discount') ? '<div class="hint">اكتب نسبة الخصم أو السعر بعد الخصم مباشرة — التاني بيتحسب لوحده.<span class="cost"> التكلفة: ' + egp(r.avg * um) + '</span></div>' : ''}
       <button class="btn" id="sAdd">إضافة للفاتورة</button>` : ''}`;
-  $$('#sChips .vchip').forEach(b => b.onclick = () => { if (sVar && sVar.id === b.dataset.v) return; sVar = it.variants.find(v => v.id === b.dataset.v); pickSn = new Set(); renderPick(); });
+  $$('#sChips .vchip').forEach(b => b.onclick = () => { if (sVar && sVar.id === b.dataset.v) return; sVar = it.variants.find(v => v.id === b.dataset.v); pickSn = new Set(); sU = null; renderPick(); });
   if (!sVar) return;
+  $$('#sUn [data-u]').forEach(b => b.onclick = () => { sU = +b.dataset.u; lastU[sVar.id] = sU; renderPick(); });
   $$('#sSn [data-sn]').forEach(b => b.onclick = () => { const x = b.dataset.sn; if (pickSn.has(x)) pickSn.delete(x); else pickSn.add(x); b.classList.toggle('on', pickSn.has(x)); $('#sQty').value = pickSn.size; });
   const fromDisc = () => { const p = num($('#sPrice').value), d = num($('#sDisc').value);
     $('#sNet').value = $('#sDisc').value.trim() && p ? roundP(p * (1 - d / 100)) : ''; $('#sNet').placeholder = p || ''; };
@@ -3459,22 +3511,23 @@ function renderPick() {
     $('#sDisc').value = $('#sNet').value.trim() && p ? +((1 - n / p) * 100).toFixed(2) : ''; };
   $('#sAdd').onclick = addToCart;
   const pr = promoFor(it, sVar); sPromo = pr;
-  if (pr && r.price) { $('#sDisc').value = pr.pct; fromDisc(); $('#sPick').insertAdjacentHTML('beforeend', `<div class="hint" style="color:var(--amb)">🏷 ${esc(pr.name)} — ${tx('خصم', 'off')} ${fmt(pr.pct)}%</div>`); }
+  if (pr && rp) { $('#sDisc').value = pr.pct; fromDisc(); $('#sPick').insertAdjacentHTML('beforeend', `<div class="hint" style="color:var(--amb)">🏷 ${esc(pr.name)} — ${tx('خصم', 'off')} ${fmt(pr.pct)}%</div>`); }
 }
 let sPromo = null;
 function addToCart() {
-  const snMode = C.V[sVar.id].sns.length > 0;
-  const qty = snMode ? pickSn.size : qOf($('#sQty').value, sSel), list = num($('#sPrice').value);
+  const snMode = C.V[sVar.id].sns.length > 0, pk = pkOf(sVar), us = pk ? pkUnits(pk) : null, um = us ? us[sU || 0][1] : 1;
+  const qU = snMode ? pickSn.size : (us ? Math.round(num($('#sQty').value)) : qOf($('#sQty').value, sSel)), qty = qU * um, list = num($('#sPrice').value);
   if (snMode && !qty) return toast(tx('اختار السيريال / IMEI', 'Choose the serial / IMEI'));
   const price = $('#sNet').value.trim() ? num($('#sNet').value) : list;
-  const left = C.V[sVar.id].stock - inCart(sVar.id);
+  const left = C.V[sVar.id].stock - inCart(sVar.id), rp = C.V[sVar.id].price ? (us ? pkMoney(C.V[sVar.id].price * um) : C.V[sVar.id].price) : 0;
   if (qty <= 0) return toast('اكتب الكمية');
-  if (qty > left) return toast(`المتاح من هذا اللون ${fmt(left)} فقط`);
+  if (qty > left + 1e-9) return toast(us ? tx('المتاح ', 'Only ') + pkTxt(sSel, sVar, left) + tx(' بس', ' left') : `المتاح من هذا اللون ${fmt(left)} فقط`);
   if (list <= 0 || price <= 0) return toast('اكتب سعر البيع');
   if (price > list) return toast('السعر بعد الخصم أكبر من السعر الأصلي');
-  const promoOk = sPromo && Math.abs(price - roundP(list * (1 - sPromo.pct / 100))) < 0.01 && list === C.V[sVar.id].price;
-  if (!can('discount') && !promoOk && (price < list || (C.V[sVar.id].price && list < C.V[sVar.id].price))) return toast('مش مسموح لك تعمل خصم');
-  cart.push(Object.assign({ itemId: sSel.id, vid: sVar.id, qty, list, price, disc: list > price ? ($('#sDisc').value.trim() ? num($('#sDisc').value) : +((1 - price / list) * 100).toFixed(2)) : 0 }, snMode ? { sn: [...pickSn] } : {}));
+  const promoOk = sPromo && Math.abs(price - roundP(list * (1 - sPromo.pct / 100))) < 0.01 && Math.abs(list - rp) < 0.005;
+  if (!can('discount') && !promoOk && (price < list || (rp && list < rp - 0.004))) return toast('مش مسموح لك تعمل خصم');
+  if (us) lastU[sVar.id] = sU || 0;
+  cart.push(Object.assign({ itemId: sSel.id, vid: sVar.id, qty, list: list / um, price: price / um, disc: list > price ? ($('#sDisc').value.trim() ? num($('#sDisc').value) : +((1 - price / list) * 100).toFixed(2)) : 0 }, snMode ? { sn: [...pickSn] } : {}, us && um > 1 ? { pu: us[sU || 0][0], pn: um } : us ? { pu: us[sU || 0][0], pn: 1 } : {}));
   $('#sItem').value = ''; sSel = null; sVar = null; pickSn = new Set(); renderPick(); renderCart();
   toast('تمت الإضافة للفاتورة');
 }
@@ -3492,8 +3545,8 @@ function renderCart() {
   const sub = cart.reduce((s, l) => s + l.qty * l.price, 0), disc = cart.reduce((s, l) => s + l.qty * (l.list - l.price), 0);
   $('#sCart').innerHTML = `<h2>الفاتورة</h2>` + cart.map((l, i) => { const [it, v] = findVariant(l.vid); return `<div class="ln">
       <div style="flex:1;min-width:0"><div class="b">${esc(it.name)}</div><div class="sm">${vlabel(v)}</div>${l.sn ? `<div class="sm mut ltr">S/N: ${esc(l.sn.join(', '))}</div>` : ''}
-        ${l.disc ? `<div class="sm" style="color:var(--red)">خصم ${fmt(l.disc)}% (بدلاً من ${fmt(l.list)})</div>` : ''}</div>
-      <div class="sm" style="text-align:end"><span class="ltr">${fmt(l.qty)} × ${fmt(l.price)}</span><div class="b">${egp(l.qty * l.price)}</div></div>
+        ${l.disc ? `<div class="sm" style="color:var(--red)">خصم ${fmt(l.disc)}% (بدلاً من ${fmt(pkMoney(l.list * (l.pn || 1)))})</div>` : ''}</div>
+      <div class="sm" style="text-align:end"><span>${l.pu ? `${fmt(l.qty / l.pn)} ${esc(un(l.pu))} × ${fmt(pkMoney(l.price * l.pn))}` : `<span class="ltr">${fmt(l.qty)} × ${fmt(l.price)}</span>`}</span><div class="b">${egp(l.qty * l.price)}</div></div>
       <button class="x" data-i="${i}">×</button></div>`; }).join('') +
     `<div class="row" style="align-items:center;margin-top:10px"><label style="margin:0;flex:none">الضريبة %</label><input id="sTax" inputmode="decimal" value="${sTax || ''}" placeholder="0" style="max-width:110px"></div>
     <div id="sTot"></div>
@@ -3533,7 +3586,7 @@ function saveSale() {
   if (sPay === CREDIT && num(sPaid) > total) return toast('المدفوع أكبر من الإجمالي');
   const before = new Set(C.plan.map(r => r.v.id + r.status));
   const c = custFor(sCust, sPhone);
-  const t = { id: uid(), type: 'sell', ts, tax, pay: sPay, by: who(), lines: cart.map(l => Object.assign({ itemId: l.itemId, vid: l.vid, qty: l.qty, price: l.price, list: l.list, disc: l.disc }, l.sn ? { sn: l.sn } : {})), note: sNote.trim() };
+  const t = { id: uid(), type: 'sell', ts, tax, pay: sPay, by: who(), lines: cart.map(l => Object.assign({ itemId: l.itemId, vid: l.vid, qty: l.qty, price: l.price, list: l.list, disc: l.disc }, l.sn ? { sn: l.sn } : {}, l.pu ? { pu: l.pu, pn: l.pn } : {})), note: sNote.trim() };
   if (c) { t.cid = c.id; t.cname = c.name; }
   t.no = nextNo('sell'); if (sPhone.trim()) t.cphone = sPhone.trim();
   if (sPay === CREDIT) t.paid = Math.max(0, num(sPaid));
@@ -3588,23 +3641,35 @@ function renderBuyLines() {
   $('#bLines').innerHTML = L.length ? L.map((l, i) => { const code = l.code || sim[i] || '';
     return `<div class="bl" data-i="${i}">${l.photo ? `<div class="pht sm1" data-ph="${l.photo}"><img alt=""></div>` : ''}<div style="flex:1;min-width:0">
       <div class="b">${esc(l.name)}${l.brand ? ` <span class="mut sm">· ${esc(l.brand)}</span>` : ''}</div>
-      <div class="sm">${esc([l.type, l.mat, l.color, l.size && tx('مقاس ', 'Size ') + l.size].filter(Boolean).join(' · ') || '—')}</div>
+      <div class="sm">${esc([l.type, l.mat, l.color, l.size && (FASH() ? tx('مقاس ', 'Size ') : '') + l.size].filter(Boolean).join(' · ') || '—')}</div>
+      ${l.pack && l.pack.u.length > 1 ? `<div class="sm mut">${esc(pkUnits(l.pack).slice(0, -1).map(([u], i) => `${un(u)} = ${fmt(l.pack.n[i])} ${un(l.pack.u[i + 1])}`).join(' · '))}</div>` : ''}
       <div class="sm mut"><span class="ltr">${esc(l.code ? l.code : fmtCode(code))}</span>${l.code ? '' : ` <span class="pill p-mut">${tx('تلقائي', 'auto')}</span>`}</div></div>
-      <div style="text-align:end"><div class="b ltr">${fmt(l.qty)} × ${fmt(l.cost)}</div><div class="sm mut">${egp(l.qty * lineCost(l))}</div>
+      <div style="text-align:end"><div class="b ${l.pack ? '' : 'ltr'}">${l.pack ? `${fmt(l.bq)} ${esc(un(pkUnits(l.pack)[l.bu || 0][0]))} × ${fmt(l.bc)}` : `${fmt(l.qty)} × ${fmt(l.cost)}`}</div><div class="sm mut">${egp(l.qty * lineCost(l))}</div>
       <div class="bla"><button type="button" class="icb" data-dup aria-label="${tx('تكرار', 'Duplicate')}">⧉</button><button type="button" class="icb dan" data-del aria-label="${tx('حذف', 'Delete')}">×</button></div></div></div>`; }).join('')
     : `<div class="empty">${tx('لسه مفيش أصناف — دوس «إضافة صنف».', 'No items yet — tap “Add item”.')}</div>`;
   fillThumbs($('#bLines'));
-  const n = L.reduce((s, l) => s + num(l.qty), 0), sum = L.reduce((s, l) => s + num(l.qty) * lineCost(l), 0);
-  $('#bTot').innerHTML = L.length ? `<div class="tot"><span>${fmt(L.length)} ${tx('صنف', 'items')} · ${fmt(n)} ${tx('قطعة', 'pcs')}</span><span>${egp(sum)}</span></div>${num($('#bTax').value) ? `<div class="sm mut">${tx('شامل ضريبة', 'Including tax')} ${fmt(num($('#bTax').value))}%</div>` : ''}` : '';
+  const n = L.reduce((s, l) => s + num(l.pack ? l.bq : l.qty), 0), sum = L.reduce((s, l) => s + num(l.qty) * lineCost(l), 0);
+  $('#bTot').innerHTML = L.length ? `<div class="tot"><span>${fmt(L.length)} ${tx('صنف', 'items')} · ${fmt(n)} ${A().pk ? tx('وحدة', 'units') : tx('قطعة', 'pcs')}</span><span>${egp(sum)}</span></div>${num($('#bTax').value) ? `<div class="sm mut">${tx('شامل ضريبة', 'Including tax')} ${fmt(num($('#bTax').value))}%</div>` : ''}` : '';
 }
 $('#bLines').addEventListener('click', e => {
   const row = e.target.closest('[data-i]'); if (!row) return; const i = +row.dataset.i;
   if (e.target.closest('[data-del]')) { BD.lines.splice(i, 1); saveBD(); renderBuyLines(); return; }
-  if (e.target.closest('[data-dup]')) { const l = BD.lines[i]; openAddLine({ ...l, color: '', size: '', qty: '', code: '', sn: '' }, null, true); return; }
+  if (e.target.closest('[data-dup]')) { const l = BD.lines[i]; openAddLine({ ...l, color: '', size: '', qty: '', bq: '', code: '', sn: '' }, null, true); return; }
   if (e.target.closest('[data-ph]')) { viewPhoto(e.target.closest('[data-ph]').dataset.ph); return; }
   openAddLine(BD.lines[i], i);
 });
 $('#bAddIt').onclick = () => openAddLine({});
+$('#bScanIt').onclick = async () => { const t = await scanCode(); if (t != null && t !== '') buyScan(t); };
+// scan a box in the purchase: a line of this invoice opens, a known item opens filled in, a new code starts a new item with the code
+function buyScan(t) {
+  if (BD.step !== 2) buyStep(2);
+  const i = BD.lines.findIndex(l => l.code && codeTxt(l.code).toUpperCase() === codeTxt(t).toUpperCase());
+  if (i >= 0) { toast(tx('الصنف ده في الفاتورة — عدّل كميته', 'Already in this invoice — edit its quantity')); return openAddLine(BD.lines[i], i); }
+  const m = byCode(t);
+  if (m) { toast(tx('صنف موجود — اكتب الكمية والتكلفة', 'Existing item — enter the quantity and cost')); return openAddLine({ itemId: m[0].id, name: m[0].name, vid: m[1] ? m[1].id : null, color: m[1] ? m[1].color : '', size: m[1] ? m[1].size : '', code: m[1] && m[1].code ? m[1].code : '' }); }
+  toast(tx('كود جديد — اكتب بيانات الصنف مرة واحدة بس', 'New code — enter the item details once'), 3200);
+  openAddLine({ code: t });
+}
 // suggestions for the item name: names that start with what was typed (then names that contain it), from the stock and from this invoice
 function nameSugs(q) {
   const k = norm(q); if (!k) return [];
@@ -3616,16 +3681,29 @@ function nameSugs(q) {
   return out.slice(0, 8);
 }
 function openAddLine(init, idx, dup) {
-  const a = A(), L = { qty: '', cost: '', ...init }, isNew = idx == null;
+  const a = A(), L = { qty: '', cost: '', ...init }, isNew = idx == null, PKON = a.pk;
+  // pack state: units big › small, how many of the next unit in each, buy unit index, price unit index
+  let pk = L.pack ? { u: L.pack.u.slice(), n: L.pack.n.slice() } : { u: PACKS[0].slice(0, 3), n: PACKS[0].slice(3) };
+  let bu = L.bu != null ? Math.min(L.bu, pk.u.length - 1) : 0, pu = L.pu != null ? Math.min(L.pu, pk.u.length - 1) : (pk.u.length > 2 ? 1 : 0);
+  const iv = PKON && L.pack ? { qty: L.bq, cost: L.bc, price: L.pp, safety: L.sfU } : { qty: L.qty, cost: L.cost, price: L.price, safety: L.safety };
+  const pkSel = () => { const k = PACKS.findIndex(x => x.filter(y => typeof y === 'string' && y).join('›') === pk.u.join('›')); return k; };
+  const pkBlock = PKON ? `<label>${tx('التعبئة', 'Packaging')}</label><select id="aPack">${PACKS.map((x, i) => { const u = x.filter(y => typeof y === 'string' && y); return `<option value="${i}">${esc(u.map(un).join(' › '))}</option>`; }).join('')}<option value="c">${tx('وحدات تانية (اكتبها بنفسك)…', 'Other units (type them)…')}</option></select>
+    <div id="aPkNm"></div><div id="aPkCn"></div>
+    <label>${tx('الشراء بـ', 'Buying by')}</label><div class="chips" id="aBU"></div>` : '';
   const f = (id, label, val, more = '') => `<div><label>${label}</label><input id="${id}" value="${esc(val == null ? '' : val)}" ${more}></div>`;
   const d = mdOpen(`<h4>${isNew ? (dup ? tx('تكرار صنف', 'Duplicate item') : tx('إضافة صنف', 'Add item')) : tx('تعديل الصنف', 'Edit item')}</h4><div class="mdd-body">
     <label>${tx('اسم الصنف', 'Item name')}</label><div class="ac" style="position:relative"><input id="aName" value="${esc(L.name || '')}" autocomplete="off" placeholder="${tx('مثال: بنادول إكسترا', 'e.g. Panadol Extra')}"><div class="acbox" id="aSug"></div></div>
     <div id="aEx" class="sm mut" style="margin-top:4px"></div>
     <div class="row">${f('aType', tx('النوع', 'Type'), L.type, `placeholder="${tx('مسكن، مضاد حيوي، فيتامين', 'Painkiller, Antibiotic, Vitamin')}"`)}${f('aBrand', tx('الماركة / المصنع (اختياري)', 'Brand / maker (optional)'), L.brand)}</div>
     <div class="row">${FASH() ? f('aMat', tx('الخامة', 'Material'), L.mat, `placeholder="${tx('جينز، قطن، كتان', 'Denim, Cotton, Linen')}"`) : ''}${f('aColor', esc(a.f1), L.color, `placeholder="${esc(a.x1.split(/[،,]/)[0] || '')}"`)}</div>
-    <div class="row">${f('aSize', esc(a.f2), L.size, `placeholder="${esc(a.x2.split(/[،,]/)[0] || '')}"`)}${f('aQty', tx('الكمية', 'Quantity') + (isPiece(a.unit) ? '' : ` (${esc(a.unit)})`), L.qty, `inputmode="${a.dec ? 'decimal' : 'numeric'}"`)}</div>
-    <div class="row">${f('aCost', tx('تكلفة القطعة (ج.م)', 'Cost per piece (EGP)'), L.cost, 'inputmode="decimal"')}${f('aPrice', tx('سعر البيع (اختياري)', 'Selling price (optional)'), L.price, `inputmode="decimal" placeholder="${tx('بالهامش العام', 'global margin')}"`)}</div>
-    <div class="row">${f('aSafety', tx('المخزون الاحتياطي', 'Safety stock'), L.safety, 'inputmode="numeric" placeholder="0"')}${f('aLead', tx('وقت التوريد (أيام)', 'Lead time (days)'), L.lead, `inputmode="numeric" placeholder="${S.settings.lead}"`)}</div>
+    ${PKON ? `<div class="row">${f('aSize', esc(a.f2), L.size, `placeholder="${esc(a.x2.split(/[،,]/)[0] || '')}"`)}</div>${pkBlock}
+    <div class="row">${f('aQty', tx('الكمية', 'Quantity'), iv.qty, 'inputmode="decimal"')}${f('aCost', tx('التكلفة', 'Cost'), iv.cost, 'inputmode="decimal"')}</div>
+    <label>${tx('سعر البيع لـ', 'Selling price per')}</label><div class="chips" id="aPU"></div>
+    <div class="row">${f('aPrice', tx('سعر البيع (اختياري)', 'Selling price (optional)'), iv.price, `inputmode="decimal" placeholder="${tx('بالهامش العام', 'global margin')}"`)}</div>
+    <div class="hint" id="aPkH"></div>`
+    : `<div class="row">${f('aSize', esc(a.f2), L.size, `placeholder="${esc(a.x2.split(/[،,]/)[0] || '')}"`)}${f('aQty', tx('الكمية', 'Quantity') + (isPiece(a.unit) ? '' : ` (${esc(a.unit)})`), L.qty, `inputmode="${a.dec ? 'decimal' : 'numeric'}"`)}</div>
+    <div class="row">${f('aCost', tx('تكلفة القطعة (ج.م)', 'Cost per piece (EGP)'), L.cost, 'inputmode="decimal"')}${f('aPrice', tx('سعر البيع (اختياري)', 'Selling price (optional)'), L.price, `inputmode="decimal" placeholder="${tx('بالهامش العام', 'global margin')}"`)}</div>`}
+    <div class="row">${f('aSafety', tx('المخزون الاحتياطي', 'Safety stock'), iv.safety, 'inputmode="decimal" placeholder="0"')}${f('aLead', tx('وقت التوريد (أيام)', 'Lead time (days)'), L.lead, `inputmode="numeric" placeholder="${S.settings.lead}"`)}</div>
     ${a.exp ? `<div class="row">${f('aExp', tx('تاريخ الصلاحية', 'Expiry date'), L.exp, 'type="date" dir="ltr"')}${f('aBatch', tx('التشغيلة', 'Batch'), L.batch)}</div>` : ''}
     ${a.sn ? `<label>${tx('السيريال / IMEI (واحد في كل سطر)', 'Serial / IMEI (one per line)')}</label><textarea id="aSn" rows="2" dir="ltr">${esc(L.sn || '')}</textarea>` : ''}
     <label>${tx('الكود', 'Code')}</label>
@@ -3637,6 +3715,55 @@ function openAddLine(init, idx, dup) {
   const el = d.el, V = id => { const x = $('#' + id, el); return x ? x.value.trim() : ''; };
   let itemId = L.itemId || null, photo = L.photo || '';
   fillThumbs($('#aPh', el));
+  let custom = false, keepPk = !!L.pack;
+  const pkDraw = (names) => {
+    if (!PKON) return;
+    const us = pkUnits(pk);
+    if (names) { const k = pkSel(); custom = custom || k < 0; $('#aPack', el).value = custom ? 'c' : String(k); if (window.MK && MK.syncSelect) MK.syncSelect($('#aPack', el));
+      $('#aPkNm', el).innerHTML = custom ? `<div class="row">${[0, 1, 2].map(i => `<div><label>${[tx('الوحدة الكبيرة', 'Big unit'), tx('الوحدة الوسطى', 'Middle unit'), tx('الوحدة الصغيرة (اختياري)', 'Small unit (optional)')][i]}</label><input data-un="${i}" value="${esc(pk.u[i] || '')}" placeholder="${['علبة', 'شريط', 'قرص'][i]}"></div>`).join('')}</div>` : ''; }
+    $('#aPkCn', el).innerHTML = pk.u.length > 1 ? `<div class="row">${pk.u.slice(0, -1).map((u, i) => `<div><label>${tx(`عدد ال${pk.u[i + 1]} في ال${u}`, `${un(pk.u[i + 1])}s per ${un(u)}`)}</label><input data-pn="${i}" inputmode="numeric" value="${esc(pk.n[i] || '')}"></div>`).join('')}</div>` : '';
+    const chip = (i, cur, k) => `<button type="button" class="vchip ${i === cur ? 'on' : ''}" data-${k}="${i}">${esc(un(us[i][0]))}${us[i][1] > 1 ? `<small>${fmt(us[i][1])} ${esc(un(pk.u[pk.u.length - 1]))}</small>` : ''}</button>`;
+    $('#aBU', el).innerHTML = us.map((x, i) => chip(i, bu, 'bu')).join(''); $('#aBU', el).style.display = $('#aBU', el).previousElementSibling.style.display = us.length > 1 ? '' : 'none';
+    $('#aPU', el).innerHTML = us.map((x, i) => chip(i, pu, 'pu')).join(''); $('#aPU', el).style.display = $('#aPU', el).previousElementSibling.style.display = us.length > 1 ? '' : 'none';
+    const lab = (id, t) => { const x = $('#' + id, el); if (x) x.previousElementSibling.textContent = t; };
+    lab('aQty', tx('الكمية', 'Quantity') + ` (${un(us[bu][0])})`); lab('aCost', tx(`تكلفة ال${us[bu][0]} (ج.م)`, `Cost per ${un(us[bu][0])} (EGP)`));
+    lab('aPrice', tx(`سعر بيع ال${us[pu][0]} (اختياري)`, `Price per ${un(us[pu][0])} (optional)`)); lab('aSafety', tx(`المخزون الاحتياطي (${us[0][0]})`, `Safety stock (${un(us[0][0])})`));
+    pkHint();
+  };
+  const pkHint = () => {
+    if (!PKON) return; const us = pkUnits(pk), mB = us[bu][1], mP = us[pu][1], bq = num(V('aQty')), bc = num(V('aCost')), pp = num(V('aPrice')), small = pk.u[pk.u.length - 1];
+    const cb = bc > 0 ? bc / mB : 0, pb = pp > 0 ? pp / mP : cb > 0 ? roundP(cb * (1 + (+S.settings.margin || 0) / 100)) : 0, vv = { pack: pk };
+    $('#aPkH', el).innerHTML = [bq > 0 && us.length > 1 ? `📦 ${tx('هيدخل المخزن:', 'Goes into stock:')} <b>${esc(pkTxt(null, vv, bq * mB))}</b> = <b>${fmt(bq * mB)} ${esc(un(small))}</b>` : '',
+      cb > 0 && us.length > 1 ? `💰 ${tx('التكلفة:', 'Cost:')} ${esc(pkPrices(vv, cb))}` : '',
+      pb > 0 ? `🏷 ${pp > 0 ? tx('سعر البيع:', 'Selling price:') : tx('سعر البيع بالهامش العام:', 'Price by the global margin:')} <b>${esc(us.length > 1 ? pkPrices(vv, pb) : fmt(pb))}</b>` : ''].filter(Boolean).join('<br>');
+  };
+  const pkLoad = (v, it) => {
+    if (!PKON) return;
+    if (v && v.pack) pk = { u: v.pack.u.slice(), n: v.pack.n.slice() }; else if (v && it && !pkOf(v)) pk = { u: [baseU(it, v)], n: [] };
+    custom = pkSel() < 0; bu = 0; pu = pk.u.length > 2 ? 1 : 0; pkDraw(true);
+    const us = pkUnits(pk), set = (id, val) => { const x = $('#' + id, el); if (x && val != null && val !== '') x.value = val; };
+    if (v) { if (v.safety) set('aSafety', +(v.safety / us[0][1]).toFixed(2)); if (v.price) set('aPrice', pkMoney(v.price * us[pu][1])); const r = C.V[v.id]; if (r && r.last && !V('aCost')) set('aCost', pkMoney(r.last * us[bu][1])); }
+    pkHint();
+  };
+  if (PKON) {
+    $('#aPack', el).onchange = () => { const k = $('#aPack', el).value;
+      if (k === 'c') { custom = true; pkDraw(true); return; }
+      custom = false; const x = PACKS[+k], u = x.filter(y => typeof y === 'string' && y), n = x.filter(y => typeof y === 'number');
+      pk = { u, n: u.slice(1).map((_, i) => n[i] || 1) }; bu = 0; pu = u.length > 2 ? 1 : 0; pkDraw(true); };
+    el.addEventListener('input', e => {
+      const nm = e.target.closest('[data-un]'), cn = e.target.closest('[data-pn]');
+      if (nm) { const vals = $$('[data-un]', el).map(x => x.value.trim()); const u = vals.filter(Boolean); if (!u.length) return;
+        const old = pk.n; pk = { u, n: u.slice(1).map((_, i) => old[i] || 1) }; bu = Math.min(bu, u.length - 1); pu = Math.min(pu, u.length - 1); pkDraw(false); return; }
+      if (cn) { pk.n[+cn.dataset.pn] = Math.max(1, Math.round(num(cn.value))) || 1; pkDraw(false); return; }
+      if (['aQty', 'aCost', 'aPrice'].includes(e.target.id)) pkHint();
+    });
+    el.addEventListener('click', e => { const b = e.target.closest('[data-bu],[data-pu]'); if (!b) return;
+      const us0 = pkUnits(pk), oldB = us0[bu][1], oldP = us0[pu][1];
+      if (b.dataset.bu != null) { bu = +b.dataset.bu; const c = num(V('aCost')); if (c > 0) $('#aCost', el).value = pkMoney(c / oldB * us0[bu][1]); }
+      else { pu = +b.dataset.pu; const c = num(V('aPrice')); if (c > 0) $('#aPrice', el).value = pkMoney(c / oldP * us0[pu][1]); }
+      pkDraw(false); });
+    custom = pkSel() < 0; pkDraw(true);
+  }
   const sup = () => $('#bSup').value.trim();
   const showCode = () => {
     const code = V('aCode');
@@ -3649,9 +3776,11 @@ function openAddLine(init, idx, dup) {
     itemId = it.id;
     const set = (id, val) => { const x = $('#' + id, el); if (x && val != null && val !== '') x.value = val; };
     $('#aName', el).value = it.name; set('aType', it.type); set('aBrand', it.brand); set('aMat', it.mat); set('aLead', it.lead);
-    if (v) { set('aColor', v.color); set('aSize', v.size); set('aSafety', v.safety); if (v.price) set('aPrice', v.price); const r = C.V[v.id]; if (r && r.last && !V('aCost')) set('aCost', r.last); }
+    if (v) { set('aColor', v.color); set('aSize', v.size); if (!PKON) { set('aSafety', v.safety); if (v.price) set('aPrice', v.price); const r = C.V[v.id]; if (r && r.last && !V('aCost')) set('aCost', r.last); } }
+    if (PKON && !keepPk) { const pv = v || it.variants.find(x => x.pack) || it.variants[0]; if (pv) pkLoad(pv, it); }
+    keepPk = false;
     if (!photo && it.photo) { photo = it.photo; $('#aPh', el).innerHTML = thumbs([photo], true); fillThumbs($('#aPh', el)); }
-    $('#aEx', el).innerHTML = `${tx('صنف موجود', 'Existing item')} · ${tx('المخزون', 'stock')} ${fmt(itemStock(it))}${it.sup ? ' · 🏭 ' + esc(it.sup) : ''}`;
+    $('#aEx', el).innerHTML = `${tx('صنف موجود', 'Existing item')} · ${tx('المخزون', 'stock')} ${v ? esc(pkTxt(it, v, C.V[v.id] ? C.V[v.id].stock : 0)) : fmt(itemStock(it))}${it.sup ? ' · 🏭 ' + esc(it.sup) : ''}`;
     showCode();
   };
   const sugBox = $('#aSug', el);
@@ -3666,7 +3795,8 @@ function openAddLine(init, idx, dup) {
   sugBox.addEventListener('click', e => { const r = e.target.closest('[data-s]'); if (!r) return; const s = sugBox._l[+r.dataset.s]; sugBox.style.display = 'none';
     if (s.item) fillFrom(s.item, null);
     else { const l = s.line; ['aType', 'aBrand', 'aMat', 'aCost', 'aPrice', 'aSafety', 'aLead'].forEach(id => { const x = $('#' + id, el), k = { aType: 'type', aBrand: 'brand', aMat: 'mat', aCost: 'cost', aPrice: 'price', aSafety: 'safety', aLead: 'lead' }[id]; if (x && l[k] != null && l[k] !== '') x.value = l[k]; });
-      $('#aName', el).value = l.name; itemId = l.itemId || null; showCode(); }
+      $('#aName', el).value = l.name; itemId = l.itemId || null; showCode();
+      if (PKON && l.pack) { pk = { u: l.pack.u.slice(), n: l.pack.n.slice() }; bu = l.bu || 0; pu = l.pu || 0; custom = pkSel() < 0; ['aCost', 'aPrice', 'aSafety'].forEach(id => { const k = { aCost: 'bc', aPrice: 'pp', aSafety: 'sfU' }[id]; if (l[k] != null && l[k] !== '') $('#' + id, el).value = l[k]; }); pkDraw(true); } }
     $('#aColor', el).focus(); });
   ['aType', 'aMat', 'aColor', 'aSize', 'aCode'].forEach(id => { const x = $('#' + id, el); if (x) x.addEventListener('input', showCode); });
   $('#aScan', el).onclick = async () => { const t = await scanCode(); if (t == null) return; const m = byCode(t);
@@ -3674,10 +3804,14 @@ function openAddLine(init, idx, dup) {
     else { $('#aCode', el).value = t; showCode(); toast(tx('كود جديد', 'New code')); } };
   $('#aPhAdd', el).onclick = async () => { const id = await addPhoto(); if (!id) return; if (photo) PH.del(photo); photo = id; $('#aPh', el).innerHTML = thumbs([photo], true); fillThumbs($('#aPh', el)); };
   $('#aPh', el).addEventListener('click', e => { if (e.target.closest('[data-phdel]')) { PH.del(photo); photo = ''; $('#aPh', el).innerHTML = ''; return; } const t = e.target.closest('[data-ph]'); if (t) viewPhoto(t.dataset.ph); });
-  if (itemId && itemById(itemId)) fillFrom(itemById(itemId), null); else showCode();
-  const read = () => ({ key: L.key || uid(), itemId, name: V('aName'), type: V('aType'), brand: V('aBrand'), mat: V('aMat'), color: V('aColor'), size: V('aSize'),
+  if (itemId && itemById(itemId)) fillFrom(itemById(itemId), L.vid ? findVariant(L.vid)[1] : null); else showCode();
+  const read = () => { const o = { key: L.key || uid(), itemId, name: V('aName'), type: V('aType'), brand: V('aBrand'), mat: V('aMat'), color: V('aColor'), size: V('aSize'),
     qty: num(V('aQty')), cost: num(V('aCost')), price: num(V('aPrice')) || '', safety: V('aSafety') === '' ? '' : Math.round(num(V('aSafety'))), lead: V('aLead') === '' ? '' : Math.round(num(V('aLead'))),
-    exp: V('aExp'), batch: V('aBatch'), sn: V('aSn'), code: V('aCode'), photo });
+    exp: V('aExp'), batch: V('aBatch'), sn: V('aSn'), code: V('aCode'), photo };
+    if (PKON) { const us = pkUnits(pk), mB = us[bu][1], mP = us[pu][1];
+      Object.assign(o, { pack: { u: pk.u.slice(), n: pk.n.slice(0, pk.u.length - 1).map(x => +x || 1) }, bu, pu, bq: o.qty, bc: o.cost, pp: o.price, sfU: V('aSafety'),
+        qty: Math.round(o.qty * mB * 1000) / 1000, cost: o.cost / mB, price: o.price ? o.price / mP : '', safety: V('aSafety') === '' ? '' : Math.round(num(V('aSafety')) * us[0][1]) }); }
+    return o; };
   const check = l => {
     if (!l.name) return tx('اكتب اسم الصنف', 'Enter the item name');
     if (!(l.qty > 0)) return tx('اكتب الكمية', 'Enter the quantity');
@@ -3696,7 +3830,7 @@ function openAddLine(init, idx, dup) {
     const l = read(), err = check(l); if (err) return toast(err, 3000);
     if (isNew) BD.lines.push(l); else BD.lines[idx] = l;
     saveBD(); renderBuyLines(); d.close();
-    if (more) setTimeout(() => openAddLine({ ...l, key: null, color: '', size: '', qty: '', code: '', sn: '', exp: '', batch: '' }, null, true), 120);
+    if (more) setTimeout(() => openAddLine({ ...l, key: null, color: '', size: '', qty: '', bq: '', code: '', sn: '', exp: '', batch: '' }, null, true), 120);
   });
   if (!L.name) setTimeout(() => $('#aName', el).focus(), 250);
 }
@@ -3722,11 +3856,13 @@ $('#bSave').onclick = () => {
     if (l.lead !== '' && l.lead != null) it.lead = l.lead;
     if (l.photo) it.photo = l.photo;
     const v = codedVariant(it, l.color, l.size);
+    if (l.pack) { if (l.pack.u.length > 1) v.pack = { u: l.pack.u.slice(), n: l.pack.n.slice() }; else delete v.pack; it.unit = l.pack.u[l.pack.u.length - 1]; }
     if (l.code && codeTxt(l.code) !== codeTxt(v.serial)) v.code = l.code;
     if (l.safety !== '' && l.safety != null) v.safety = l.safety;
     if (l.price > 0) v.price = l.price;
-    const ln = { itemId: it.id, vid: v.id, qty: l.qty, cost: Math.round(l.cost * (1 + tax / 100) * 10000) / 10000 };
+    const ln = { itemId: it.id, vid: v.id, qty: l.qty, cost: Math.round(l.cost * (1 + tax / 100) * 1e8) / 1e8 };
     if (l.exp) ln.exp = l.exp; if (l.batch) ln.batch = l.batch; const sn = splitSn(l.sn); if (sn.length) ln.sn = sn;
+    if (l.pack && l.pack.u.length > 1) { const us = pkUnits(l.pack)[l.bu || 0]; if (us[1] > 1) { ln.pu = us[0]; ln.pn = us[1]; } }
     lines.push(ln); delete S.ordered[v.id];
   }
   S.settings.buyTax = tax; S.settings.buyPay = bPay;
@@ -3975,7 +4111,7 @@ function buyBody(t) {
     ${t.supplier ? kv('المورد', esc(t.supplier)) : ''}${t.sphone ? kv('موبايل المورد', `<span class="n">${esc(t.sphone)}</span>`) : ''}${t.sinv ? kv('رقم فاتورة المورد', `<span class="n">${esc(t.sinv)}</span>`) : ''}${t.by ? kv('سجّلها', esc(t.by)) : ''}
     <div class="hr"></div>
     ${t.lines.map(l => { const [it, v] = findVariant(l.vid) || []; return `<div class="ln"><div class="nm">${esc(it ? it.name : 'صنف')}</div>${v ? `<div class="vr">${esc([v.color, v.size].filter(Boolean).join(' — '))} · <span class="n">${esc(v.code || fmtCode(v.serial))}</span></div>` : ''}
-      <div class="kv"><span>${nn(l.qty)} × ${nn(l.cost)}</span><span class="b">${nn(l.qty * l.cost)}</span></div>
+      <div class="kv"><span>${l.pn ? `${nn(l.qty / l.pn)} ${esc(un(l.pu))} × ${nn(l.cost * l.pn)}` : `${nn(l.qty)} × ${nn(l.cost)}`}</span><span class="b">${nn(l.qty * l.cost)}</span></div>
       ${l.exp || l.batch ? `<div class="vr">${l.exp ? 'صلاحية ' + fExp(l.exp) : ''}${l.batch ? ' تشغيلة ' + esc(l.batch) : ''}</div>` : ''}${l.sn ? `<div class="vr">S/N: <span class="n">${esc(l.sn.join(', '))}</span></div>` : ''}</div>`; }).join('')}
     <div class="hr"></div>
     ${t.tax ? kv(`شامل ضريبة ${fmt(t.tax)}%`, '') : ''}${kv('الإجمالي', nn(buyTotal(t)) + ' ج.م', 'tt')}${kv('طريقة الدفع', esc(t.pay || 'كاش'))}
@@ -4317,7 +4453,7 @@ function makePdf(pages) {
 function labelItems(lines) {
   const sh = S.settings.shop.name || 'Takla Ibrahim', out = [];
   lines.forEach(l => { const [it, v] = findVariant(l.vid); if (!it) return; const r = C.V[v.id];
-    const x = { shop: sh, name: it.name, brand: it.brand || '', color: v.color, size: v.size, code: v.code || fmtCode(v.serial), bar: barOf(v), price: (r && r.price) || 0 };
+    const x = { shop: sh, name: it.name, brand: it.brand || '', color: v.color, size: v.size, code: v.code || fmtCode(v.serial), bar: barOf(v), price: pkMoney(((r && r.price) || 0) * (l.pn || 1)) };
     for (let k = 0; k < Math.max(1, Math.round(l.labels != null ? l.labels : l.qty)); k++) out.push(x); });
   return out;
 }
@@ -4347,7 +4483,7 @@ function saveBytes(name, bytes, mime) {
 }
 // the sheet shown after a purchase (and from any purchase invoice): pick the sticker size, get the file
 function openLabels(t) {
-  const lines = t.lines.filter(l => findVariant(l.vid)[0]).map(l => ({ ...l, labels: Math.round(l.qty) }));
+  const lines = t.lines.filter(l => findVariant(l.vid)[0]).map(l => ({ ...l, labels: Math.round(l.qty / (l.pn || 1)) }));
   let kind = S.settings.labelKind || 'a4';
   const d = mdOpen(`<h4>${tx('ملف الباركود', 'Barcode file')} <span class="ltr">#${rno(t)}</span></h4><div class="mdd-body">
     <div class="sm mut">${tx('ستيكر لكل قطعة — تقدر تغيّر العدد. الملف PDF تطبعه من أي مكتبة أو طابعة باركود.', 'One sticker per piece — you can change the count. The PDF prints from any print shop or label printer.')}</div>
@@ -4391,9 +4527,9 @@ function showItem(it) {
     <div class="row" style="align-items:center"><div><div class="b" style="font-size:18px">${esc(it.name)}</div>
       <div class="sm mut"><span class="ltr">${esc(it.serial)}</span>${it.code ? ' · كود <span class="ltr">' + esc(it.code) + '</span>' : ''}</div></div>
       <div style="flex:none">${stk > 0 ? '<span class="pill p-grn">موجود</span>' : '<span class="pill p-red">نفد</span>'}</div></div>
-    <div class="kv" style="grid-template-columns:1fr 1fr"><div><b>${itemPriceText(it)}</b><span>سعر البيع</span></div><div><b>${fmt(stk)}</b><span>إجمالي المتاح</span></div></div>
+    <div class="kv" style="grid-template-columns:1fr 1fr"><div><b>${itemPriceText(it)}</b><span>سعر البيع</span></div><div><b>${it.variants.length === 1 ? esc(pkTxt(it, it.variants[0], stk)) : fmt(stk)}</b><span>إجمالي المتاح</span></div></div>
     <h3>${A().color ? 'الألوان المتاحة' : tx('المتاح', 'Available')}</h3>
-    <table>${it.variants.map(v => { const r = C.V[v.id]; return `<tr><td>${vlabel(v)}</td><td class="b" style="color:${r.stock > 0 ? 'var(--grn)' : 'var(--red)'}">${r.stock > 0 ? 'متاح ' + fmt(r.stock) : 'نفد'}${r.lots[0] && r.lots[0].exp ? `<div class="sm" style="font-weight:400">${lotTxt(r.lots[0])}</div>` : ''}</td><td>${r.price ? egp(r.price) : '—'}</td></tr>`; }).join('')}</table>
+    <table>${it.variants.map(v => { const r = C.V[v.id]; return `<tr><td>${vlabel(v)}</td><td class="b" style="color:${r.stock > 0 ? 'var(--grn)' : 'var(--red)'}">${r.stock > 0 ? 'متاح ' + esc(pkTxt(it, v, r.stock)) : 'نفد'}${r.lots[0] && r.lots[0].exp ? `<div class="sm" style="font-weight:400">${lotTxt(r.lots[0])}</div>` : ''}</td><td>${r.price ? (pkOf(v) ? esc(pkPrices(v, r.price)).replace(/ · /g, '<br>') : egp(r.price)) : '—'}</td></tr>`; }).join('')}</table>
     <div class="row" style="margin-top:12px"><button class="btn sm" id="qSell">بيع</button>${can('buy') ? '<button class="btn sec sm" id="qBuy">شراء</button>' : ''}${can('editItems') ? '<button class="btn sec sm" id="qEdit">تعديل</button>' : ''}</div></div>`;
   $('#qSell').onclick = () => { closeModal(); go('sell'); $('#sItem').value = it.name; pickSell(it); };
   if ($('#qBuy')) $('#qBuy').onclick = () => { closeModal(); go('buy'); pickBuy(it); };
@@ -4404,18 +4540,18 @@ function showItem(it) {
 function editItem(it) {
   let pm = it.priceMode;
   const a = A();
-  const vbox = (v, isNew) => { const r = v && C.V[v.id] || { stock: 0 }; return `<div class="ev" ${isNew ? 'data-new="1"' : `data-v="${v.id}"`}>
-    <div class="cap"><span>${isNew ? (a.color ? 'لون/مقاس جديد' : esc(dims()) + tx(' جديد', ' — new')) : `<span class="ltr">${esc(v.serial)}</span> · المخزون ${fmt(r.stock)}`}</span><button class="x" ${isNew ? '' : `data-dv="${v.id}"`}>×</button></div>
+  const vbox = (v, isNew) => { const r = v && C.V[v.id] || { stock: 0 }, B = v && pkOf(v) ? pkUnits(v.pack)[0] : null, m = B ? B[1] : 1; return `<div class="ev" ${isNew ? 'data-new="1"' : `data-v="${v.id}"`} data-m="${m}">
+    <div class="cap"><span>${isNew ? (a.color ? 'لون/مقاس جديد' : esc(dims()) + tx(' جديد', ' — new')) : `<span class="ltr">${esc(v.serial)}</span> · المخزون ${esc(pkTxt(it, v, r.stock))}${B ? ' · ' + esc(pkUnits(v.pack).slice(0, -1).map(([u], i) => `${un(u)} = ${fmt(v.pack.n[i])} ${un(v.pack.u[i + 1])}`).join(' · ')) : ''}`}</span><button class="x" ${isNew ? '' : `data-dv="${v.id}"`}>×</button></div>
     <div class="g"><div><label>${esc(a.f1)}</label><input class="ec" value="${esc(v ? v.color : '')}" data-list="${a.color ? 'colorList' : 'd1List'}"></div>
       <div><label>${esc(a.f2)}</label><input class="es" value="${esc(v ? v.size : '')}" data-list="d2List"></div>
-      <div><label>حد الأمان</label><input class="ef" inputmode="numeric" placeholder="0" value="${v ? (v.safety || '') : (it.safety || '')}"></div>
-      <div><label>سعر خاص (اختياري)</label><input class="ep" inputmode="decimal" placeholder="تلقائي" value="${v && v.price ? v.price : ''}"></div></div>
+      <div><label>حد الأمان${B ? ` (${esc(un(B[0]))})` : ''}</label><input class="ef" inputmode="decimal" placeholder="0" value="${v ? (v.safety ? +(v.safety / m).toFixed(2) : '') : (it.safety || '')}"></div>
+      <div><label>${B ? tx('سعر ال' + B[0] + ' (اختياري)', 'Price per ' + un(B[0]) + ' (optional)') : 'سعر خاص (اختياري)'}</label><input class="ep" inputmode="decimal" placeholder="تلقائي" value="${v && v.price ? pkMoney(v.price * m) : ''}"></div></div>
     <label>${a.color ? 'باركود اللون/المقاس (اختياري)' : tx('باركود (اختياري)', 'Barcode (optional)')}</label><div class="cf"><input class="eb" dir="ltr" value="${esc(v ? v.code || '' : '')}" placeholder="امسحه أو اكتبه"><button type="button" class="scanb" data-scanfor="prev" aria-label="مسح باركود"></button></div></div>`; };
   openModal(`<div class="top"><h2>تعديل الصنف</h2>${closeBtn}</div>
     <div class="sm mut">الرقم المسلسل: <b class="ltr">${esc(it.serial)}</b></div>
     <label>اسم الصنف</label><input id="eName" value="${esc(it.name)}">
     <div class="row"><div><label>الكود / الباركود</label><div class="cf"><input id="eCode" value="${esc(it.code)}"><button type="button" class="scanb" data-scanfor="eCode" aria-label="مسح باركود"></button></div></div><div><label>مدة التوريد (أيام)</label><input id="eLead" inputmode="numeric" value="${it.lead}"></div></div>
-    <div class="row" ${!APP_ACT || !isPiece(a.unit) || a.dec || a.war > 0 || a.sn ? '' : 'style="display:none"'}><div><label>${tx('وحدة البيع', 'Selling unit')}</label><input id="eUnit" data-list="unitList" value="${esc(it.unit || '')}" placeholder="${esc(a.unit)}"></div>
+    <div class="row" ${(!APP_ACT || !isPiece(a.unit) || a.dec || a.war > 0 || a.sn) && !it.variants.some(pkOf) ? '' : 'style="display:none"'}><div><label>${tx('وحدة البيع', 'Selling unit')}</label><input id="eUnit" data-list="unitList" value="${esc(it.unit || '')}" placeholder="${esc(a.unit)}"></div>
       <div><label>${tx('الضمان (شهور)', 'Warranty (months)')}</label><input id="eWar" inputmode="numeric" value="${it.war != null ? it.war : ''}" placeholder="${a.war || 0}"></div></div>
     <label>طريقة تسعير البيع</label>
     <div class="seg" id="ePm"><button data-m="global" ${pm === 'global' ? 'class="on"' : ''}>الهامش العام (${fmt(S.settings.margin)}%)</button><button data-m="margin" ${pm === 'margin' ? 'class="on"' : ''}>هامش خاص</button><button data-m="manual" ${pm === 'manual' ? 'class="on"' : ''}>سعر يدوي</button></div>
@@ -4452,7 +4588,7 @@ function editItem(it) {
     it.variants = it.variants.filter(v => !removed.has(v.id));
     $$('#eT .ev[data-v]').forEach(tr => { const v = it.variants.find(x => x.id === tr.dataset.v); if (!v) return;
       v.color = tr.querySelector('.ec').value.trim(); v.size = tr.querySelector('.es').value.trim();
-      v.safety = Math.round(num(tr.querySelector('.ef').value)); v.price = num(tr.querySelector('.ep').value); v.code = tr.querySelector('.eb').value.trim(); });
+      const m = +tr.dataset.m || 1; v.safety = Math.round(num(tr.querySelector('.ef').value) * m); v.price = num(tr.querySelector('.ep').value) / m; v.code = tr.querySelector('.eb').value.trim(); });
     $$('#eT .ev[data-new]').forEach(tr => { const c = tr.querySelector('.ec').value.trim(), s = tr.querySelector('.es').value.trim(); if (!c && !s) return;
       if (it.variants.some(v => sameVariant(v, c, s))) return;
       const v = newVariant(it, c, s); v.safety = Math.round(num(tr.querySelector('.ef').value)); v.price = num(tr.querySelector('.ep').value); v.code = tr.querySelector('.eb').value.trim(); });

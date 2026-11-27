@@ -50,7 +50,7 @@ async def run(lang, dark):
     await pg.fill('#rQ', sale.replace('-', '')); await W(400)
     print('loaded', await E("RT && rno(RT.t)"))
     await pg.click('#rBody .rtc >> nth=0 >> [data-ck]'); await W(250)
-    await pg.click('#rBody .rtc >> nth=0 >> [data-why=size]'); await W(250)
+    await pg.click('#rBody .rtc >> nth=0 >> [data-why=mind]'); await W(250)
     print('discount note', await E("$$('#rBody .rtc')[0].textContent.includes('360')"), 'supplier shown', await E("$('#rBody').textContent.includes('مصنع النور')"))
     await E("(()=>{const j=S.items.find(i=>i.name==='بنطلون جينز'); retPickItem(j, j.variants.find(v=>v.size==='34'));})()"); await W(300)
     print('diff', await E("JSON.stringify(retTotals().D)"))

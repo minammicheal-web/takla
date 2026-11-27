@@ -4,7 +4,7 @@
 cd "$(dirname "$0")"
 python3 mock_firebase.py >/tmp/mock_firebase.log 2>&1 & MOCK=$!
 sleep 1
-for t in core payments_reset v7_features customers_layout language activities home invoices exchange sync_basic sync_customers sync_photos; do
+for t in pharmacy_units core payments_reset v7_features customers_layout language activities home invoices exchange sync_basic sync_customers sync_photos; do
   echo "== $t"; python3 $t.py 2>&1 | grep -iE "err|fail|traceback|assert|left visible" | head -8
 done
 kill $MOCK
