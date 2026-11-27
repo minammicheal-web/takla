@@ -189,7 +189,7 @@ html.dark{--sc:#1f2b27;--sch:#2a3833;--on-sv:#bfc9c4;--inv:#dee4e1;--inv-on:#2b3
 [dir=ltr] #xPrev svg,[dir=ltr] #xNext svg{transform:scaleX(-1)}
 #top header[dir=ltr] #ttl{text-align:left}#top header[dir=rtl] #ttl{text-align:right}
 /* ---- barcode, receipts, returns, customers, login ---- */
-.cf{position:relative}.cf>input{padding-inline-end:52px!important}
+.cf{position:relative}html[dir=rtl] .cf>input{padding-left:52px!important}html:not([dir=rtl]) .cf>input{padding-right:52px!important}
 .scanb{display:none;position:absolute;inset-inline-end:6px;top:50%;transform:translateY(-50%);width:42px;height:42px;border:0;border-radius:50%;background:transparent;color:var(--acc);cursor:pointer;place-items:center;z-index:2;padding:0}
 html.canscan .scanb{display:grid}
 html:not(.canscan) .cso{display:none!important}
@@ -233,7 +233,8 @@ body.nocost .cost{display:none!important}
 /* ---- home page and the hold-to-open item menu ---- */
 .home{display:flex;flex-direction:column;align-items:center;text-align:center;padding:28px 8px 12px}
 .hm-logo{font-size:64px;width:120px;height:120px;border-radius:36px;background:var(--acc2);display:grid;place-items:center;line-height:1;box-shadow:0 6px 20px rgba(0,0,0,.08)}
-.hm-name{font-size:30px;font-weight:800;margin-top:18px;letter-spacing:-.3px}
+.hm-name{font-size:30px;font-weight:800;margin-top:18px;letter-spacing:-.3px}.hm-name.two{font-size:24px;white-space:nowrap;line-height:1.15}.hm-name .sub{display:block;font-size:17px;font-weight:600;color:var(--mut);letter-spacing:.5px;margin-top:2px}
+#ttl.two{display:flex;align-items:center;min-width:0}#ttl.two .aic{flex:none}#ttl .tw{display:flex;flex-direction:column;line-height:1.15;min-width:0}#ttl .tw b{font-size:.56em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#ttl .tw small{font-size:.44em;font-weight:600;color:var(--mut);letter-spacing:.4px}
 .hm-date{color:var(--mut);font-size:16px;margin-top:6px}
 .hm-time small{font-size:22px;font-weight:500;margin-inline-start:8px;color:var(--mut)}
 .hm-time{font-size:56px;font-weight:300;margin-top:14px;font-variant-numeric:tabular-nums;letter-spacing:-1px}
@@ -3280,12 +3281,17 @@ function go(p) {
   window.scrollTo(0, 0);
 }
 $('#nav').addEventListener('click', e => { const b = e.target.closest('button'); if (b) go(b.dataset.p); });
+const SUBW = /^(pharmacy|pharmacies|pharma|صيدلية|صيدليه|صيدليات)$/i, NAME_SUB = 'Pharmacy';
+function nmSplit(n) { const w = String(n).trim().split(/\s+/); if (w.length > 1 && SUBW.test(w[w.length - 1])) return [w.slice(0, -1).join(' '), w[w.length - 1]]; if (w.length > 1 && SUBW.test(w[0])) return [w.slice(1).join(' '), w[0]]; return [String(n).trim(), NAME_SUB]; }
 function setTitle() {
   const n = String(S.settings.shop.name || 'Takla Ibrahim').trim() || 'Takla Ibrahim', t = $('#ttl'), ic = A().ic;
   let ie = t.querySelector('.aic'); if (!ie) { ie = document.createElement('span'); ie.className = 'aic'; ie.setAttribute('aria-hidden', 'true'); t.prepend(ie); }
   if (!ie.querySelector('img')) ie.innerHTML = '<img src="icon-192.png" alt="" style="width:100%;height:100%;border-radius:24%;display:block">';
-  let tn = [...t.childNodes].find(x => x.nodeType === 3 && x.data.trim()); [...t.childNodes].forEach(x => { if (x.nodeType === 3 && x !== tn) x.remove(); });
-  if (!tn) { tn = document.createTextNode(n); ie.after(tn); } else if (tn.data !== n) tn.data = n;
+  const [nm, sb] = nmSplit(n), tw0 = t.querySelector('.tw');
+  if (sb) { [...t.childNodes].forEach(x => { if (x.nodeType === 3) x.remove(); }); let tw = tw0; if (!tw) { tw = document.createElement('span'); tw.className = 'tw'; ie.after(tw); }
+    const h2 = `<b>${esc(nm)}</b><small>${esc(sb)}</small>`; if (tw.innerHTML !== h2) tw.innerHTML = h2; t.classList.add('two'); }
+  else { if (tw0) tw0.remove(); t.classList.remove('two'); let tn = [...t.childNodes].find(x => x.nodeType === 3 && x.data.trim()); [...t.childNodes].forEach(x => { if (x.nodeType === 3 && x !== tn) x.remove(); });
+    if (!tn) { tn = document.createTextNode(n); ie.after(tn); } else if (tn.data !== n) tn.data = n; }
   const m = n.match(/[A-Za-z\u00C0-\u024F\u0600-\u06FF]/), d = m && /[\u0600-\u06FF]/.test(m[0]) ? 'rtl' : 'ltr';
   const h = $('#top header'); if (h.getAttribute('dir') !== d) h.setAttribute('dir', d);
   if (document.title !== n) document.title = n;
@@ -3413,7 +3419,7 @@ $('#stList').addEventListener('click', e => {
 /* ================= HOME page ================= */
 function renderHome() {
   const set = (id, v) => { const e = $('#' + id); if (e.textContent !== v) e.textContent = v; }, now = new Date();
-  { const lg = $('#hmLogo'); if (!lg.querySelector('img')) lg.innerHTML = '<img src="icon-192.png" alt="" style="width:100%;height:100%;object-fit:contain;border-radius:24%">'; } set('hmName', String(S.settings.shop.name || 'Takla Ibrahim').trim() || 'Takla Ibrahim');
+  { const lg = $('#hmLogo'); if (!lg.querySelector('img')) lg.innerHTML = '<img src="icon-192.png" alt="" style="width:100%;height:100%;object-fit:contain;border-radius:24%">'; } { const [nm, sb] = nmSplit(String(S.settings.shop.name || 'Takla Ibrahim').trim() || 'Takla Ibrahim'), hn = $('#hmName'), h2 = esc(nm) + (sb ? `<span class="sub">${esc(sb)}</span>` : ''); if (hn.innerHTML !== h2) hn.innerHTML = h2; hn.classList.toggle('two', !!sb); }
   set('hmDate', now.toLocaleDateString(LOC, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }));
   const tp = new Intl.DateTimeFormat(LOC, { hour: 'numeric', minute: '2-digit' }).formatToParts(now), dp = tp.find(x => x.type === 'dayPeriod');
   const th = esc(tp.filter(x => x.type !== 'dayPeriod').map(x => x.value).join('').trim()) + (dp ? `<small>${esc(dp.value)}</small>` : ''), te = $('#hmTime');
