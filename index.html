@@ -2508,11 +2508,70 @@ function editUser(u) {
 let scanSeq = 0; const scanCb = {};
 function canScan() { return !!(window.Android && Android.scan); }
 if (canScan()) document.documentElement.classList.add('canscan');
+let SCANNED = null;                                         // a code a USB scanner just typed, handed to the next scan button
 function scanCode() {
+  if (SCANNED != null) { const v = SCANNED; SCANNED = null; return Promise.resolve(v); }
   return new Promise(res => { if (!canScan()) return res(null); const id = ++scanSeq; scanCb[id] = res; Android.scan(id); });
 }
-window.onScan = (id, text, err) => { const f = scanCb[id]; delete scanCb[id]; if (err) toast('تعذر فتح ماسح الباركود: ' + err, 4000); if (f) f(text == null ? null : String(text).trim()); };
-function byCode(code) {
+window.onScan = (id, text, err) => { const f = scanCb[id]; delete scanCb[id]; if (err) toast('تعذر فتح ماسح الباركود: ' + err, 4000); if (f) f(text == null ? null : scanIn(text)); };
+// reads a GS1 code: "(01)06221025012345(17)270630(10)AB12(21)X9" or the raw form with GS separators; null if it isn't one
+const GS1FIX = { '00': 18, '01': 14, '02': 14, '11': 6, '12': 6, '13': 6, '15': 6, '16': 6, '17': 6 };
+function gs1(raw) {
+  let t = String(raw == null ? '' : raw).trim().replace(/^\](d2|C1|Q3|e0)/, '').replace(/^\x1d+/, '');
+  const out = {};
+  if (/^\(\d{2,4}\)/.test(t)) { const re = /\((\d{2,4})\)([^(]*)/g; let m; while ((m = re.exec(t))) out[m[1]] = m[2].replace(/\x1d/g, '').trim(); }
+  else {
+    if (!/^01\d{14}/.test(t)) return null;
+    let i = 0, guard = 0;
+    while (i < t.length && guard++ < 12) {
+      if (t[i] === '\x1d') { i++; continue; }
+      let ai = t.substr(i, 2); if (!/^\d{2}$/.test(ai)) break;
+      if (/^(31|32|33|34|35|36)$/.test(ai)) { ai = t.substr(i, 4); out[ai] = t.substr(i + 4, 6); i += 10; continue; }
+      if (/^(24|25|70|71|72|80|81|82)$/.test(ai)) ai = t.substr(i, 3);
+      const fx = GS1FIX[ai]; i += ai.length;
+      if (fx) { out[ai] = t.substr(i, fx); i += fx; continue; }
+      const j = t.indexOf('\x1d', i), e = j < 0 ? t.length : j; out[ai] = t.slice(i, e); i = e;
+    }
+  }
+  const g = String(out['01'] || '').replace(/\D/g, ''); if (g.length !== 14) return null;
+  let exp = '', x = out['17'] || out['15'] || '';
+  if (/^\d{6}$/.test(x)) { const y = 2000 + +x.slice(0, 2), mo = +x.slice(2, 4); let d = +x.slice(4, 6); if (mo >= 1 && mo <= 12) { if (!d) d = new Date(y, mo, 0).getDate(); exp = `${y}-${String(mo).padStart(2, '0')}-${String(d).padStart(2, '0')}`; } }
+  return { gtin: g, code: g[0] === '0' ? g.slice(1) : g, exp, batch: (out['10'] || '').slice(0, 20), sn: out['21'] || '' };
+}
+let GS = null;                                             // the last square code read (its expiry and batch fill the purchase line)
+/* ---- USB / Bluetooth scanners: they type the code fast and press Enter. Caught anywhere, without clicking a box first ---- */
+const KS = { buf: '', last: 0, fast: 0 };
+document.addEventListener('keydown', e => {
+  const a = document.activeElement;
+  if ((a && (/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName) || a.isContentEditable)) || $('#login').style.display === 'flex') { KS.buf = ''; return; }
+  const now = Date.now(), gap = now - KS.last; KS.last = now;
+  if (gap > 80) { KS.buf = ''; KS.fast = 0; } else KS.fast++;
+  if (e.key === 'Enter') { const raw = KS.buf; KS.buf = ''; if (raw.length >= 6 && KS.fast >= raw.length - 2) { e.preventDefault(); onWedge(raw); }
+    else if (!raw && page === 'sell' && $('#sAdd') && $('#sAdd').offsetParent && !$('.mdd-scrim, .bal')) { e.preventDefault(); $('#sAdd').click(); }   // Enter = add the scanned item to the invoice
+    return; }
+  if (e.ctrlKey && (e.key === ']' || e.code === 'BracketRight')) { KS.buf += '\x1d'; e.preventDefault(); return; }
+  if (e.key.length === 1 && !e.ctrlKey && !e.altKey && !e.metaKey) KS.buf += e.key;
+}, true);
+let SELWG = '';
+function onWedge(raw) {
+  const code = scanIn(raw), vis = x => x && x.offsetParent !== null;
+  const ct = $('#ctIn'); if (vis(ct)) { ct.value = code; ct.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true })); return; }
+  const as = $('#aScan'); if (as && as.closest('body')) { SCANNED = code; as.onclick(); return; }
+  if ($('.mdd-scrim, .bal')) return toast(tx('اقفل النافذة المفتوحة الأول، وبعدين اعمل scan', 'Close the open window first, then scan'));
+  if (page === 'buy' && can('buy')) return buyScan(code);
+  if (page === 'ret' && $('#rQ')) { $('#rQ').value = code; RT = null; retSearch(); return; }
+  if (page === 'sup' && $('#supCq')) { $('#supCq').value = code; renderSupOne(); return; }
+  if (page !== 'sell') { if (!byCode(code) && can('buy')) { go('buy'); return buyScan(code); } go('sell'); }
+  const si = $('#sItem'); if (!si) return;
+  const m = byCode(code), q = $('#sQty');
+  if (m && q && $('#sAdd') && si.value === m[0].name && SELWG === code) { q.value = (+num(q.value) || 0) + 1; q.dispatchEvent(new Event('input', { bubbles: true })); toast(tx('الكمية: ', 'Quantity: ') + q.value + tx(' — دوس Enter للإضافة', ' — press Enter to add'), 1800); return; }
+  SELWG = code; si.value = code;
+  si.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true }));
+  if (si.value === code) { si.dispatchEvent(new Event('input', { bubbles: true })); si.focus(); }
+}
+function scanIn(text) { const v = String(text).trim(), g = gs1(v); GS = g; return g ? g.code : v; }
+function byCode(code, alt) {
+  { const g = gs1(code); if (g) code = g.code; }
   const q = norm(code); if (!q) return null; snHit = null;
   const qc = codeTxt(q).toUpperCase();
   if (qc.length >= 8) for (const it of S.items) for (const v of it.variants) if ((v.code && codeTxt(v.code).toUpperCase() === qc) || codeTxt(v.serial).toUpperCase() === qc) return [it, v];
@@ -2522,6 +2581,8 @@ function byCode(code) {
     if ((it.code && norm(it.code) === q) || norm(it.serial) === q) return [it, null];
     const v = it.variants.find(v => norm(v.serial) === q); if (v) return [it, v];
   }
+  // the line barcode is 13 digits; the square code holds the same number with a leading 0
+  if (!alt && /^\d{13,14}$/.test(q)) return byCode(q.length === 13 ? '0' + q : (q[0] === '0' ? q.slice(1) : ''), true);
   return null;
 }
 function codeTaken(code, ex) { const q = norm(code); return S.items.some(i => i !== ex && (norm(i.code) === q || i.variants.some(v => v.code && norm(v.code) === q))); }
@@ -3850,12 +3911,15 @@ $('#bScanIt').onclick = async () => { const t = await scanCode(); if (t != null 
 // scan a box in the purchase: a line of this invoice opens, a known item opens filled in, a new code starts a new item with the code
 function buyScan(t) {
   if (BD.step !== 2) buyStep(2);
-  const i = BD.lines.findIndex(l => l.code && codeTxt(l.code).toUpperCase() === codeTxt(t).toUpperCase());
+  const g = gs1(t) || (GS && GS.code === t ? GS : null); if (g) t = g.code;
+  const gx = g && A().exp ? { exp: g.exp, batch: g.batch } : {};
+  if (g && (g.exp || g.batch)) toast(tx('اتقرا من الكود: ', 'Read from the code: ') + [g.exp && tx('الصلاحية ', 'expiry ') + g.exp, g.batch && tx('التشغيلة ', 'batch ') + g.batch].filter(Boolean).join(' · '), 3200);
+  const i = BD.lines.findIndex(l => l.code && codeTxt(l.code).toUpperCase() === codeTxt(t).toUpperCase() && (!gx.batch || !l.batch || l.batch === gx.batch));
   if (i >= 0) { toast(tx('الصنف ده في الفاتورة — عدّل كميته', 'Already in this invoice — edit its quantity')); return openAddLine(BD.lines[i], i); }
   const m = byCode(t);
-  if (m) { toast(tx('صنف موجود — اكتب الكمية والتكلفة', 'Existing item — enter the quantity and cost')); return openAddLine({ itemId: m[0].id, name: m[0].name, vid: m[1] ? m[1].id : null, color: m[1] ? m[1].color : '', size: m[1] ? m[1].size : '', code: m[1] && m[1].code ? m[1].code : '' }); }
+  if (m) { toast(tx('صنف موجود — اكتب الكمية والتكلفة', 'Existing item — enter the quantity and cost')); return openAddLine({ itemId: m[0].id, name: m[0].name, vid: m[1] ? m[1].id : null, color: m[1] ? m[1].color : '', size: m[1] ? m[1].size : '', code: m[1] && m[1].code ? m[1].code : '', ...gx }); }
   toast(tx('كود جديد — اكتب بيانات الصنف مرة واحدة بس', 'New code — enter the item details once'), 3200);
-  openAddLine({ code: t });
+  openAddLine({ code: t, ...gx });
 }
 // suggestions for the item name: names that start with what was typed (then names that contain it), from the stock and from this invoice
 function nameSugs(q) {
@@ -3997,7 +4061,9 @@ function openAddLine(init, idx, dup) {
       if (PKON && l.pack) { pk = { u: l.pack.u.slice(), n: l.pack.n.slice() }; bu = l.bu || 0; pu = l.pu || 0; custom = pkSel() < 0; ['aCost', 'aPrice', 'aSafety'].forEach(id => { const k = { aCost: 'bc', aPrice: 'pp', aSafety: 'sfU' }[id]; if (l[k] != null && l[k] !== '') $('#' + id, el).value = l[k]; }); pkDraw(true); } }
     $('#aColor', el).focus(); });
   ['aType', 'aMat', 'aColor', 'aSize', 'aCode'].forEach(id => { const x = $('#' + id, el); if (x) x.addEventListener('input', showCode); });
-  $('#aScan', el).onclick = async () => { const t = await scanCode(); if (t == null) return; const m = byCode(t);
+  const gsFill = g => { if (!g) return; const e = $('#aExp', el), b = $('#aBatch', el); if (e && g.exp) e.value = g.exp; if (b && g.batch) b.value = g.batch; };
+  $('#aCode', el).addEventListener('change', () => { const g = gs1(V('aCode')); if (g) { $('#aCode', el).value = g.code; gsFill(g); showCode(); } });
+  $('#aScan', el).onclick = async () => { const t = await scanCode(); if (t == null) return; gsFill(GS && GS.code === t ? GS : null); const m = byCode(t);
     if (m) { fillFrom(m[0], m[1]); if (!m[1] || codeTxt(barOf(m[1])) !== codeTxt(t)) $('#aCode', el).value = t; toast(tx('صنف موجود — كمّل الكمية والتكلفة', 'Existing item — fill in the quantity and cost')); }
     else { $('#aCode', el).value = t; showCode(); toast(tx('كود جديد', 'New code')); } };
   $('#aPhAdd', el).onclick = async () => { const id = await addPhoto(); if (!id) return; if (photo) PH.del(photo); photo = id; $('#aPh', el).innerHTML = thumbs([photo], true); fillThumbs($('#aPh', el)); };

@@ -1,4 +1,4 @@
-name: Build Android app
+name: Build Android and Windows apps
 
 on:
   push:
@@ -59,6 +59,39 @@ jobs:
         with:
           tag_name: v${{ github.run_number }}
           name: Takla ${{ github.run_number }}
-          body: Download Takla.apk below and open it on your phone to install or update. Your data is kept when updating.
+          body: Phone — download Takla.apk and open it to install or update. Computer (Windows 10/11) — download Takla-Setup.exe and run it. Your data is kept when updating.
           files: Takla.apk
           make_latest: true
+
+  windows:
+    needs: build
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Add the app page to the Windows app
+        run: |
+          mkdir -p desktop/app desktop/build
+          cp index.html manifest.json icon-192.png icon-512.png desktop/app/
+          cp icon-512.png desktop/build/icon.png
+
+      - name: Build Takla-Setup.exe
+        working-directory: desktop
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+        run: |
+          npm version 1.0.${{ github.run_number }} --no-git-tag-version
+          npm install --no-audit --no-fund --save-dev electron@33 electron-builder@25
+          npx electron-builder --win --publish never
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ github.run_number }}
+          files: desktop/dist/Takla-Setup.exe

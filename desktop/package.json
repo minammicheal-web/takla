@@ -1,0 +1,16 @@
+{
+  "name": "takla",
+  "productName": "Takla Ibrahim",
+  "version": "1.0.0",
+  "description": "Takla Ibrahim pharmacy inventory",
+  "author": "Mina",
+  "main": "main.js",
+  "build": {
+    "appId": "com.mina.takla",
+    "productName": "Takla Ibrahim",
+    "directories": { "output": "dist", "buildResources": "build" },
+    "files": ["main.js", "app/**"],
+    "win": { "target": [{ "target": "nsis", "arch": ["x64"] }], "icon": "build/icon.png" },
+    "nsis": { "oneClick": true, "perMachine": false, "artifactName": "Takla-Setup.exe", "shortcutName": "Takla Ibrahim", "createDesktopShortcut": true, "createStartMenuShortcut": true }
+  }
+}
