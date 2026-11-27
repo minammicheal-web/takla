@@ -11,7 +11,7 @@ async def run(lang, dark):
     b = await p.chromium.launch(executable_path='/usr/bin/google-chrome', args=['--no-sandbox'])
     ctx = await b.new_context(viewport={'width': 390, 'height': 844}, device_scale_factor=2, has_touch=True, color_scheme='dark' if dark else 'light')
     if lang == 'en': await ctx.add_init_script("localStorage.setItem('store-lang','en')")
-    await ctx.add_init_script("window.__scanQ=[]; window.Android={scan:id=>setTimeout(()=>onScan(id, window.__scanQ.shift()),20)}")
+    await ctx.add_init_script("window.__APP_ACT='pharmacy'; window.__scanQ=[]; window.Android={scan:id=>setTimeout(()=>onScan(id, window.__scanQ.shift()),20)}")
     pg = await ctx.new_page(); errs = []
     pg.on('pageerror', lambda e: errs.append(str(e)))
     await pg.goto(APP); await pg.wait_for_timeout(500)
